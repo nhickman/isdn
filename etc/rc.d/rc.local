@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# /etc/rc.d/rc.local:  Local system initialization script.
+#
+# Put any local startup commands in here.  Also, if you have
+# anything that needs to be run at shutdown time you can
+# make an /etc/rc.d/rc.local_shutdown script and put those
+# commands in there.
+
+# LightTPD web server
+sleep 1
+echo -n "Starting Web Server... "
+/usr/bin/lighttpd/sbin/lighttpd -f /etc/lighttpd.conf
+echo "done."
+sleep 1
+echo -n "Starting ISDN Stack... "
+#/usr/bin/dt/mISDN start
+echo "done."
+sleep 1
+echo -n "Starting Apps... "
+perl /usr/bin/dt/scripts/config-read.pl startup 
+echo "done."
+#cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh

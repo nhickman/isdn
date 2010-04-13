@@ -6,7 +6,7 @@ use warnings;
 use CGI;
 use CGI::Ajax;
 use IO::File;
-#require include::CheckConfig;
+require include::CheckConfig;
 
 
 use vars qw(
@@ -18,7 +18,7 @@ getEnv();
 if (@varname){
 	doStuff();
 }
-#$cfgdiff = CheckConfig::Check();
+$cfgdiff = CheckConfig::Check();
 getInfo();
 getETH(0);
 

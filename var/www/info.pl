@@ -220,13 +220,14 @@ sub getETH ($) {
 			@a3 = split(/:/,$a2[15]);
 			$iface_mtu[$i] = $a3[1];
 			if ($a2[10] eq "UP") {
-				if ($a2[12] eq "RUNNING")||($a2[12] eq "RUNNING") {
+				if (($a2[12] eq "RUNNING") || ($a2[12] eq "RUNNING")) {
 					$iface_status[$i] = "UP/CONNECTED";
 				}
-				if ($a2[12] ne "RUNNING")&&($a2[12] ne "RUNNING"){
+				if (($a2[12] ne "RUNNING") && ($a2[12] ne "RUNNING")){
 					$iface_status[$i] = "UP/DISCONNECTED";
 				}
-			}else{
+			}
+			else{
 				$iface_status[$i] = "Administratively Down";
 			}
 			$#a2 = 0;

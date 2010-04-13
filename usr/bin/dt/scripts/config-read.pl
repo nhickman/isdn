@@ -10,9 +10,12 @@ my $eth_mtu;
 #my $debug_filename = "/root/router/fs";
 my $debug_filename = "";
 my $file_name = "";
+my $file_name_start = $debug_filename . '/ftp/config.xml';
+my $file_name_run = $debug_filename . '/ftp/config-run.xml';
+my $tmp_filename = $debug_filename . "/ftp/.cfgdiff";
 my $root = "";
+my $action;
 
-my $twig= XML::Twig->new();
 
 ##
 ## Args
@@ -23,33 +26,46 @@ my $twig= XML::Twig->new();
 if ($args == 0) {
 	print "Requires arguments,\n\n";
 	print "Args\n";
-	print "  0 - What are we doing: startup, query\n";
+	print "  0 - What are we doing: startup, query, save, write\n";
 	print "  1 - Which config to query: start, run\n";
 	print "  2 - Which section to query: sys, eth, route, peers\n\n";
 
 }
+$action = $ARGV[0];
 
-if ($ARGV[0] eq "startup"){
-	$file_name = $debug_filename . '/ftp/config.xml';
+if ($action eq "startup"){
+	my $twig= XML::Twig->new();
+	$file_name = $file_name_start;
 	$twig->parsefile($file_name);
 	$root = $twig->root;
 
 	print "\nROUTER START CONFIGURATION\n\n";
-	#doSystem();
-	#doETH();
-	#doRoutes();
-	doPeers();	
+	doSystem();
+	doETH();
+	doRoutes();
+	doPeers();
+	print "Copy startup config to running config\n\n";
+	exec `/bin/cp $file_name $file_name_run`;
+	exec `/bin/rm $tmp_filename`;
 }
-if ($ARGV[0] eq "query"){
+
+if ($action eq "save"){
+	exec `/bin/cp $file_name_run $file_name_start`;
+	if (-e $tmp_filename){ exec `/bin/rm $tmp_filename`;	}
+}
+
+
+if ($action eq "query"){
+	my $twig= XML::Twig->new();
 	#Which config to query
 	if ($ARGV[1] eq ""){
 		exit 0;
 	}
 	if ($ARGV[1] eq "start") {
-		$file_name = $debug_filename . '/ftp/config.xml';
+		$file_name = $file_name_start;
 	}
 	if ($ARGV[1] eq "run") {
-		$file_name = $debug_filename . '/ftp/config-run.xml';
+		$file_name = $file_name_run;
 	}
 	
 	$twig->parsefile($file_name);
@@ -70,6 +86,41 @@ if ($ARGV[0] eq "query"){
 	}
 	if ($ARGV[2] eq "peers") {
 		qryPeers();
+	}
+}
+
+if ($action eq "write"){
+	my $twig= XML::Twig->new();
+	#Which config to query
+	if ($ARGV[1] eq ""){
+		exit 0;
+	}
+	if ($ARGV[1] eq "start") {
+		$file_name = $file_name_start;
+	}
+	if ($ARGV[1] eq "run") {
+		$file_name = $file_name_run;
+	}	
+	$twig->parsefile($file_name);
+	$root = $twig->root;
+	
+	#Which section to report
+	if ($ARGV[2] eq "sys") {
+		doSystem();
+	}
+	if ($ARGV[2] eq "eth") {
+		doETH();
+		doRoutes();
+	}
+	if ($ARGV[2] eq "route") {
+		doETH();
+		doRoutes();
+	}
+	if ($ARGV[2] eq "ospfopts") {
+		doOSPFOpt();
+	}
+	if ($ARGV[2] eq "peers") {
+		doPeers();
 	}
 }
 
@@ -139,11 +190,9 @@ sub qryRoutes {
 }
 
 sub qryOSPFOpt {
-	print "enter\n";
 	my $count = 0;
 	foreach my $p ($root->children('ospf_opt')){
 		my $o_peer = $p->att('peer');
-		print "peer = $o_peer\n";
 		if ($o_peer eq $ARGV[3]){
 			my $o_mltpoint = $p->field('ospf_network');
 			my $o_auth = $p->field('ospf_auth');
@@ -243,8 +292,10 @@ sub qryPeers {
 #-------------------------#
 sub doSystem {
 	foreach my $systems ($root->children('system')){
-		print "Hostname: " . $systems->field('hostname') . "\n";
-		print "\n";
+		if ($action eq "start") {
+			print "Hostname: " . $systems->field('hostname') . "\n";
+			print "\n";
+		}
 		open(FH, "> ". $debug_filename . "/etc/HOSTNAME");
 		print FH $systems->field('hostname') . "\n";
 		close FH; 
@@ -258,12 +309,14 @@ sub doETH {
 		$eth_bitmask = getbitmask($eth_subnet);
 		$eth_mtu = $ethernet->first_child_text('mtu');
 		
-		print "Ethernet:\n";
-	  print " interface: eth0\n";
-	  print " IP address: " . $eth_ipaddr . "\n";
-	  print " Subnet: " . $eth_subnet . " Bitmask: /" . $eth_bitmask . "\n";
-	  print " MTU: " . $eth_mtu . "\n";
-	  print "\n";
+		if ($action eq "start") {
+			print "Ethernet:\n";
+		  print " interface: eth0\n";
+		  print " IP address: " . $eth_ipaddr . "\n";
+		  print " Subnet: " . $eth_subnet . " Bitmask: /" . $eth_bitmask . "\n";
+		  print " MTU: " . $eth_mtu . "\n";
+		  print "\n";
+		}
 	}
 }
 
@@ -276,31 +329,30 @@ sub doRoutes {
 	  my $type = $route->att('type');
 	  my $network = $route->field('network');
 	  my $subnet = $route->field('subnet');
-	  my $bitmask = 0;
-    my $gw;
-    my $area;
+	  my $bitmask = getbitmask($subnet);
+    my $gw = $route->field('gateway');
+    my $area = $route->field('area');
 	  
-		print "Route " . $count . "\n";
-		print "  type: " . $type . "\n";
-		if ($route->children_count('priority') == 1){
-			print "  priority: " . $route->att('priority') . "\n";
+		if ($action eq "start") {
+			print "Route " . $count . "\n";
+			print "  type: " . $type . "\n";
+			if ($route->children_count('priority') == 1){
+				print "  priority: " . $route->att('priority') . "\n";
+			}
+			if ($route->children_count('default') == 1){
+				print "  Default Route\n";
+			}
+			print "  network: " . $network . "\n";
+			print "  subnet: " . $subnet . "\n";
+		
+			if ($route->children_count('gateway') == 1){
+				print "  gateway: " . $gw . "\n";
+			}
+			if ($route->children_count('area') == 1){
+				print "  area: " . $area . "\n";
+			}
+			print "\n";
 		}
-		if ($route->children_count('default') == 1){
-			print "  Default Route\n";
-		}
-		print "  network: " . $network . "\n";
-		print "  subnet: " . $subnet . "\n";
-		$bitmask = getbitmask($subnet);
-	
-		if ($route->children_count('gateway') == 1){
-		  $gw = $route->field('gateway');
-			print "  gateway: " . $gw . "\n";
-		}
-		if ($route->children_count('area') == 1){
-		  $area = $route->field('area');
-			print "  area: " . $area . "\n";
-		}
-		print "\n";
 		
 		if ($type eq "static") {
 			$static_routes = $static_routes . "ip route " . $network . "/" . $bitmask . " $gw\n";
@@ -332,15 +384,10 @@ sub doRoutes {
 		open(FH, "> ". $debug_filename . "/etc/routing/ospfd.conf");
 		print FH "! -*- OSPF -*-\n\n";
 		print FH "password molybdenum\n\n";
-		print FH "interface eth0\n";
-		print FH "interface ppp1\n\n";
-		print FH "interface ppp2\n\n";
-		print FH "interface ppp3\n\n";
-		print FH "interface ppp4\n\n";
-		print FH "interface ppp5\n\n";
-		print FH "interface ppp6\n\n";
-		print FH "interface ppp7\n\n";
-		print FH "interface ppp8\n\n";
+		print FH "interface eth0\n\n";
+		close FH;
+		doOSPFOpt();		
+		open(FH, ">> ". $debug_filename . "/etc/routing/ospfd.conf");
 		print FH "router ospf\n";
 		print FH $ospf_routes . "\n";
 		print FH "log file /ftp/router.log\n\n";
@@ -352,58 +399,90 @@ sub doRoutes {
 	$zebra_pid = `/bin/cat /var/run/zebra.pid >> /dev/null`; 
 	$zebra_pid=~ s/\n/ /g;
 
-	my $junk_cmd = "/bin/kill -9 " . $zebra_pid . " >> /dev/null 2>&1";
-	print "Killing Zebra ". $zebra_pid . "... ";
+	my $junk_cmd = "/bin/killall zebra >> /dev/null 2>&1";
 	system $junk_cmd;
 	system "/bin/rm -f /var/run/zebra.pid >> /dev/null 2>&1";
-	print "done.\n";
 
 	my $ospfd_pid = `/bin/cat /var/run/ospfd.pid >> /dev/null 2>&1`; 
 	$ospfd_pid =~ s/\n/ /g;
 
-	my $junk_cmd = "/bin/kill -9 " . $ospfd_pid . " >> /dev/null 2>&1";
-	print "Killing OSPFd ". $ospfd_pid . "... ";
+	my $junk_cmd = "/bin/killall ospfd >> /dev/null 2>&1";
 	system $junk_cmd;
 	system "/bin/rm -f /var/run/ospfd.pid >> /dev/null 2>&1";
-	print "done.\n";
 
-	print "Starting Zebra\n";
 	system "/usr/local/sbin/zebra -d -f /etc/routing/zebra.conf";
 
-	print "Starting OSPFd\n";
 	system "/usr/local/sbin/ospfd -d -f /etc/routing/ospfd.conf";
 
 }
 
 sub doOSPFOpt {
-	my $count = 0;
+	my $count = 1;
+	my $last_peer = 0;
+
 	foreach my $p ($root->children('ospf_opt')){
-		my $o_peer = $p->att('peer');
-		my $o_mltpoint = $p->field('ospf_network');
-		my $o_auth = $p->field('ospf_auth');
-		my $o_auth_key = $p->field('ospf_auth_key');
-		my $o_msg_digest_id = $p->field('ospf_message_digest_key_id');
-		my $o_msg_digest_key = $p->field('ospf_message_digest_key_pass');
-		my $o_cost = $p->field('ospf_cost');
-		my $o_dead_int = $p->field('ospf_dead_interval');
-		my $o_hello_int = $p->field('ospf_hello_interval');
-		my $o_retrans_int = $p->field('ospf_retransmit_interval');
-		my $o_trans_delay = $p->field('ospf_trasmit_delay');
-		my $o_mtu_ignore = $p->field('ospf_mtu_ignore');
-		
-		print $o_peer . ",";
-		print $o_mltpoint . ",";
-		print $o_auth . ",";
-		print $o_auth_key . ",";
-		print $o_msg_digest_id . ",";
-		print $o_msg_digest_key . ",";
-		print $o_cost . ",";
-		print $o_dead_int . ",";
-		print $o_hello_int . ",";
-		print $o_retrans_int . ",";
-		print $o_trans_delay . ",";
-		print $o_mtu_ignore;
-		print "\n";
+		my $o_peer = 0;
+		my $o_mltpoint = 0;
+		my $o_auth = 0;
+		my $o_auth_key = 0;
+		my $o_msg_digest_id = 0;
+		my $o_msg_digest_key = "";
+		my $o_cost = 0;
+		my $o_dead_int = 0;
+		my $o_hello_int = 0;
+		my $o_retrans_int = 0;
+		my $o_trans_delay = 0;
+		my $o_mtu_ignore = 0;
+
+		$o_peer = $p->att('peer')+1-1;
+		for($count=$last_peer+1;(($count<$o_peer)&&($count<9));$count++){
+			open(FH, ">> ". $debug_filename . "/etc/routing/ospfd.conf");
+			print FH "interface ppp". $count ."\n\n";
+			close FH;
+		}
+
+		if ($p->children_count('ospf_network') >0){ $o_mltpoint = 1; } 
+		if ($p->children_count('ospf_auth') > 0){ $o_auth = $p->field('ospf_auth')+1-1; }
+		if ($p->children_count('ospf_auth_key') >0){ $o_auth_key = $p->field('ospf_auth_key'); }
+		if ($p->children_count('ospf_message_digest_key_id') > 0){ $o_msg_digest_id = $p->field('ospf_message_digest_key_id')+1-1; }
+		if ($p->children_count('ospf_message_digest_key_pass') > 0){ $o_msg_digest_key = $p->field('ospf_message_digest_key_pass'); }
+		if ($p->children_count('ospf_cost') > 0){ $o_cost = $p->field('ospf_cost')+1-1; }
+		if ($p->children_count('ospf_dead_interval') > 0){ $o_dead_int = $p->field('ospf_dead_interval')+1-1; }
+		if ($p->children_count('ospf_hello_interval') > 0){ $o_hello_int = $p->field('ospf_hello_interval')+1-1; }
+		if ($p->children_count('ospf_retransmit_interval') > 0){ $o_retrans_int = $p->field('ospf_retransmit_interval')+1-1; }
+		if ($p->children_count('ospf_trasmit_delay') > 0){ $o_trans_delay = $p->field('ospf_trasmit_delay')+1-1; }
+		if ($p->children_count('ospf_mtu_ignore') > 0){ $o_mtu_ignore = $p->field('ospf_mtu_ignore')+1-1; }
+			
+		open(FH, ">> ". $debug_filename . "/etc/routing/ospfd.conf");
+		print FH "interface ppp". $o_peer ."\n";
+		if ($o_mltpoint == 1) {print FH "  ip ospf network point-to-multipoint\n";}
+		if ($o_auth == 1) {
+			print FH "  ip ospf authentication\n";
+			print FH "  ip ospf authentication-key ". $o_auth_key . "\n";
+		}
+		if ($o_auth == 2) {
+			print FH "  ip ospf authentication null\n";
+		}
+		if ($o_auth == 3) {
+			print FH "  ip ospf authentication message-digest\n";			
+			print FH "  ip ospf message-digest-key ". $o_msg_digest_id . " md5 ". $o_msg_digest_key ."\n";
+		}
+		if (($o_cost > 0) && ($o_cost < 65535)) { print FH "  ip ospf cost ". $o_cost . "\n"; }
+		if (($o_dead_int > 0) && ($o_dead_int < 65535)) { print FH "  ip ospf dead-interval ". $o_dead_int . "\n"; }
+		if (($o_hello_int > 0) && ($o_hello_int < 65535)) { print FH "  ip ospf hello-interval ". $o_hello_int . "\n"; }
+		if (($o_retrans_int > 0) && ($o_retrans_int < 65535)) { print FH "  ip ospf retransmit-interval ". $o_retrans_int . "\n"; }
+		if (($o_trans_delay > 0) && ($o_trans_delay < 65535)) { print FH "  ip ospf transmit-delay ". $o_trans_delay . "\n"; }
+		if ($o_mtu_ignore == 1){ 
+			print FH "  ip ospf mtu-ignore\n";
+		}
+		print FH "\n";
+		close FH;
+		$last_peer = $o_peer;
+	}
+	for($count=$last_peer+1;$count<9;$count++){
+		open(FH, ">> ". $debug_filename . "/etc/routing/ospfd.conf");
+		print FH "interface ppp". $count ."\n\n";
+		close FH;
 	}
 }
 
@@ -425,50 +504,52 @@ sub doPeers {
 			my $peer_auth = $peer->first_child_text('auth');
 			
 			
-	    print "Peer" . $count . "\n";
-	    print " name: " . $peer_name . "\n";
-	    print " localip: " . $peer_localip . "\n";
-	    print " remoteip: " . $peer_remoteip . "\n";
-	    print " netmask: " . $peer_netmask . "\n";
-	    print " number: " . $peer_number . "\n";
-	    #need an auth check here
-	    $peer_auth = $peer_auth +1 -1;
-	    if ($peer_auth == 0){
-	    	print " auth type(s): none"
-	    }
-	    if ($peer_auth > 0){
-	    	print " auth type: ";
-	    	if ($peer_auth & 1){
-	    		print "PAP ";
-	    	}
-	    	if ($peer_auth & 2){
-	    		print "CHAP ";
-	    	}
-	    	if ($peer_auth & 4){
-	    		print "MS-CHAP ";
-	    	}	    	
-	    	print "\n";
-	    	print " username: " . $peer_username . "\n";
-	    	print " password: *Hidden*\n";
-	    }
-	    print " mtu: " . $peer_mtu . "\n";
-	    print " mru: " . $peer_mtu . "\n";
-	    print " persistent: ";
+			if ($action eq "start") {
+		    print "Peer" . $count . "\n";
+		    print " name: " . $peer_name . "\n";
+		    print " localip: " . $peer_localip . "\n";
+		    print " remoteip: " . $peer_remoteip . "\n";
+		    print " netmask: " . $peer_netmask . "\n";
+		    print " number: " . $peer_number . "\n";
+		    #need an auth check here
+		    $peer_auth = $peer_auth +1 -1;
+		    if ($peer_auth == 0){
+		    	print " auth type(s): none"
+		    }
+		    if ($peer_auth > 0){
+		    	print " auth type: ";
+		    	if ($peer_auth & 1){
+		    		print "PAP ";
+		    	}
+		    	if ($peer_auth & 2){
+		    		print "CHAP ";
+		    	}
+		    	if ($peer_auth & 4){
+		    		print "MS-CHAP ";
+		    	}	    	
+		    	print "\n";
+		    	print " username: " . $peer_username . "\n";
+		    	print " password: *Hidden*\n";
+		    }
+		    print " mtu: " . $peer_mtu . "\n";
+		    print " mru: " . $peer_mtu . "\n";
+		    print " persistent: ";
+		  }
 	    if ($peer->children_count('persist') == 1){
 				$peer_persistent = "persist";
-		    print "yes\n";
+		   	if ($action eq "start") { print "yes\n"; }
 	    }	
 	    else {
-	    	print "no\n";
+	    	if ($action eq "start") { print "no\n"; }
 	    }
-	    print " holdoff: " . $peer_holdoff . "\n";
+	    if ($action eq "start") { print " holdoff: " . $peer_holdoff . "\n";}
 	
 	   	my $elt= $peer;
-	   	print " chan: ";
+	   	if ($action eq "start") { print " chan: "; }
 	  	while( $elt= $elt->next_elt($peer, 'chan'))
 	    { 
 	    	my $p = $elt->text;
-		    print $p . " ";
+		    if ($action eq "start") { print $p . " ";}
 	    	open (FH, "> /etc/ppp/peers/isdn/bch".$p);
 	    	print FH "# -*- B Channel " . $p . " -*-\n\n";
 	    	print FH "# Name: ". $peer_name  ."\n\n";
@@ -523,8 +604,7 @@ sub doPeers {
 	    		system "/usr/sbin/pppd call isdn/bch". $p;
 	    	}
 	    }
-	    print "\n";
-	    print "\n";
+	    if ($action eq "start") { print "\n\n";}
 	}
 }
 

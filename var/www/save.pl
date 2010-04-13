@@ -7,13 +7,7 @@
 #
 # B) To call perl script from html page as javascript
 # (put in your html file, note o=js option at the END):
-# <script language="JavaScript" type="text/javascript"
-#   src="http://mydomain.com/cgi-bin/rd.pl?url=http://cyberciti.biz/&o=js"
-# </script>
-# -----------------------------------------------
-# Copyright (c) 2005 Vivek G Gite <http://cyberciti.biz/fb/>
-# This perl script is licensed under GNU GPL version 2.0 or above
-# ------------------------------------------------
+#!/usr/bin/perl -w
 
 use strict;
 use warnings;
@@ -24,10 +18,6 @@ my $q = CGI->new( );
 my $error;
 # get url param
 my $rdurl = $ENV{HTTP_REFERER};
-
-# output can be
-# js - for javascript, to create javascript based redirection so you can use script from HTML pages
-# make sure o param is in lowercase :)
 my $output = lc($q->param("o"));
 my $ret;
 # make sure url passed as url=http://somewhere.com/page.html
@@ -39,7 +29,7 @@ if ( $rdurl eq "" ){
 }
 else{ # redirect to a page
     if ( $output eq "" || $output eq "html" ){
-	   $ret=`/usr/bin/dt/msgsend 2`;
+	    exec `perl /usr/bin/dt/scripts/config-read.pl save`;
     	print $q->redirect( -URL => $rdurl);
     }
     else {
@@ -50,3 +40,4 @@ else{ # redirect to a page
       print "window.location=\"$rdurl\";\n\n";
     }
 }
+exit 0;
