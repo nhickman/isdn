@@ -1,0 +1,48 @@
+<?xml version='1.0'?>
+<mastercontrol xmlns='http://www.dtechlabs.com/somethinghere'>
+        <system><hostname>ISDNRTR</hostname></system>
+        <ethernet iface='0'>
+                <enabled />
+                <ipaddress>192.168.50.1</ipaddress>
+                <subnet>255.255.255.0</subnet>
+                <mtu>1500</mtu>
+        </ethernet>
+        <route type='static' priority='1'>
+                <default />
+                <network>0.0.0.0</network>
+                <subnet>0.0.0.0</subnet>
+                <gateway>1.1.1.1</gateway>
+        </route>
+        <route type='ospf'>
+                <network>1.1.1.0</network>
+                <subnet>255.255.255.0</subnet>
+                <area>0</area>
+        </route>
+        <ospf_opt peer='1'>
+                <ospf_network>1</ospf_network>
+                <ospf_auth>1</ospf_auth>
+                <ospf_auth_key>1234</ospf_auth_key>
+                <ospf_message_digest_key_pass></ospf_message_digest_key_pass>
+                <ospf_cost>23</ospf_cost>
+        </ospf_opt>
+        <peer>
+                <name>Peer</name>
+                <localip>1.1.1.2</localip>
+                <remoteip>1.1.1.1</remoteip>
+                <netmask></netmask>
+                <number>1111</number>
+                <auth>7</auth>
+                <username>cisco</username>
+                <password>cisco</password>
+                <mtu>1500</mtu>
+                <mru>1500</mru>
+                <persist />
+                <holdoff>300</holdoff>
+                <chan>1</chan>
+                <chan>2</chan>
+                <chan>5</chan>
+                <chan>6</chan>
+                <chan>7</chan>
+                <chan>8</chan>
+        </peer>
+</mastercontrol>
