@@ -1,4 +1,0 @@
-#! /usr/bin/sh
-cat /tmp/messages
-echo "--------------------"
-cat /var/log/lighttpd.access.log

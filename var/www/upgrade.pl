@@ -23,8 +23,12 @@ print UPLOADFILE;
 close UPLOADFILE;
 
 print "Done. ";
-my $cmd = "/usr/bin/dt/msgsend 5 \"$upload_dir/$filename\"";
-my @a1 = `$cmd`;
+system "/bin/cp \"$upload_dir/$filename\" /tmp/upgrade.tbz";
+system "/bin/tar jxf /tmp/upgrade.tbz usr/bin/dt/scripts/runfirst.sh -C /tmp";
+if (-e /usr/bin/dt/scripts/runfirst.sh){
+	system "/bin/sh /usr/bin/dt/scripts/runfirst.sh";
+}
+
 sleep 5;
 
 print "<br><br>Services restarted<br><a href='/info.pl'>main page</a></body></html>";
