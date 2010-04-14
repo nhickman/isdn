@@ -10,7 +10,7 @@ require include::CheckConfig;
 
 use vars qw(
 	%querystring %postfield
-	@varquery @vardata $maxvar $qline $pline @values $ok $cfgdiff
+	@varquery @vardata $maxvar $qline $pline @values $ok $cfgdiff $temp
 	$uname
 	$pDisplay @pStyle $p
 	@pLink
@@ -153,7 +153,7 @@ sub main {
 		</div>
 	</div>
 	</center>
-	<br><br>
+	<br><br>$temp
 	</body>
 	</html>
 EOHTML
@@ -163,6 +163,10 @@ EOHTML
 sub getEnv {
 	my($i, $a, $name);
   $spPersist = 0;
+  $spMtu = 1500;
+  $spMru = 1500;
+  $spHoldoff = 60;
+  $spDialMax = 3;
 	$spChan[1] = 0;
 	$spChan[2] = 0;
 	$spChan[3] = 0;
@@ -179,6 +183,9 @@ sub getEnv {
 	if ($values[0] ne ""){
 		foreach $i(@values) {
 			($name, $varquery[$a]) = split(/=/, $i);
+			if ($name eq "peer"){
+				$p = $varquery[$a];
+			}
 			$a++;
 		}
 	}
@@ -304,14 +311,17 @@ sub getPeer {
 	
 	@p_byline = `perl /usr/bin/dt/scripts/config-read.pl query run peers`;
 	$sizeof = @p_byline;
+	$x = 0;
 	foreach my $line (@p_byline){
 		chomp($line);
-		@p_byval = split(/,/, $line);
-		if ($p_byval[1] ne "") { $pLink[$p_byval[0]] = $p_byval[1]; }
+		@a1 = split(/,/, $line);
+		if ($a1[1] ne "") { $pLink[$a1[0]] = $a1[1]; }
+		if ($p eq $a1[0]) { $y = $x; }
+		$x++;
 	}
 	
-	@p_byval = split(/,/, $p_byline[$p-1]);
-
+	@p_byval = split(/,/, $p_byline[$y]);
+  
 	$pDisplay="<div>Select peer to configure</div>";
 	if ($p > 0 && $p < 9){
 		#set default values
@@ -332,11 +342,11 @@ sub getPeer {
 		$pRemoteIP[3] = 0;
 		$pRemoteIP[4] = 0;
 		$pNumber = "";
-		$pMtu = 30;
+		$pHoldoff = 30;
 		$pMtu = 1500;
 		$pMru = 1500;
 		$pPersist = "";
-		$pDialMax = 0;
+		$pDialMax = 3;
 		$pDialMaxEn = "style='background-color: #808080; width: 40px;'";
 		$pChan[1] = 0;
 		$pChan[2] = 0;
@@ -500,22 +510,25 @@ sub getPeer {
 sub peerCommit {
 	my $localIP = "";
 	my $remIP = "";
-	if ($spLocalIP[1] >= 0 && $spLocalIP[1] <= 255 &&
-		$spLocalIP[2] >= 0 && $spLocalIP[2] <= 255 &&
-		$spLocalIP[3] >= 0 && $spLocalIP[3] <= 255 &&
-		$spLocalIP[4] >= 0 && $spLocalIP[4] <= 255) {
-		$localIP = $spLocalIP[1] .".". $spLocalIP[2] .".". $spLocalIP[3] .".". $spLocalIP[4];
+	if (($p != 0) && ($p ne "0")){
+		if ($spLocalIP[1] >= 0 && $spLocalIP[1] <= 255 &&
+			$spLocalIP[2] >= 0 && $spLocalIP[2] <= 255 &&
+			$spLocalIP[3] >= 0 && $spLocalIP[3] <= 255 &&
+			$spLocalIP[4] >= 0 && $spLocalIP[4] <= 255) {
+			$localIP = $spLocalIP[1] .".". $spLocalIP[2] .".". $spLocalIP[3] .".". $spLocalIP[4];
+		}
+		if ($spRemoteIP[1] >= 0 && $spRemoteIP[1] <= 255 &&
+			$spRemoteIP[2] >= 0 && $spRemoteIP[2] <= 255 &&
+			$spRemoteIP[3] >= 0 && $spRemoteIP[3] <= 255 &&
+			$spRemoteIP[4] >= 0 && $spRemoteIP[4] <= 255) {
+			$remIP = $spRemoteIP[1] .".". $spRemoteIP[2] .".". $spRemoteIP[3] .".". $spRemoteIP[4];
+		}
+		my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer ";
+		$cmd = $cmd ."\"$p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
+		$cmd = $cmd ."$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
+		system $cmd;
+		$temp = $cmd;
 	}
-	if ($spRemoteIP[1] >= 0 && $spRemoteIP[1] <= 255 &&
-		$spRemoteIP[2] >= 0 && $spRemoteIP[2] <= 255 &&
-		$spRemoteIP[3] >= 0 && $spRemoteIP[3] <= 255 &&
-		$spRemoteIP[4] >= 0 && $spRemoteIP[4] <= 255) {
-		$remIP = $spRemoteIP[1] .".". $spRemoteIP[2] .".". $spRemoteIP[3] .".". $spRemoteIP[4];
-	}
-	my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer ";
-	$cmd = $cmd ."\". $p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
-	$cmd = $cmd ."$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
-	system $cmd;
 }
 
 sub peerConn {

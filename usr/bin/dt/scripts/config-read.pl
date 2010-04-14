@@ -276,6 +276,7 @@ sub qryOSPFOpt {
 sub qryPeers {
 	my $count = 1;
 	foreach my $peer ($root->children('peer')){
+			my $peer_num = $peer->att('num');
 			my $peer_name = $peer->first_child_text('name');
 			my $peer_localip = $peer->first_child_text('localip');
 			my $peer_remoteip = $peer->first_child_text('remoteip');
@@ -291,7 +292,7 @@ sub qryPeers {
 			my $peer_auth = $peer->first_child_text('auth');
 			
 			
-	    print $count . ",";
+	    print $peer_num . ",";
 	    print $peer_name . ",";
 	    print $peer_localip . ",";
 	    print $peer_remoteip . ",";
@@ -552,7 +553,7 @@ sub doPeers {
 	my $count = 0;
 	foreach my $peer ($root->children('peer')){
 			$count += 1;
-			my $peer_count = $peer->att('peer');
+			my $peer_num = $peer->att('num');
 			my $peer_name = $peer->first_child_text('name');
 			my $peer_localip = $peer->first_child_text('localip');
 			my $peer_remoteip = $peer->first_child_text('remoteip');
@@ -566,9 +567,9 @@ sub doPeers {
 			my $peer_holdoff = $peer->first_child_text('holdoff');
 			my $peer_auth = $peer->first_child_text('auth');
 			
-			
+		
 			if ($action eq "startup") {
-		    print "Peer" . $count . "\n";
+		    print "Peer" . $peer_num . "\n";
 		    print " name: " . $peer_name . "\n";
 		    print " localip: " . $peer_localip . "\n";
 		    print " remoteip: " . $peer_remoteip . "\n";
