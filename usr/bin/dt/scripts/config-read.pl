@@ -26,9 +26,9 @@ my $action;
 if ($args == 0) {
 	print "Requires arguments,\n\n";
 	print "Args\n";
-	print "  0 - What are we doing: startup, query, save, write\n";
+	print "  0 - What are we doing: startup, query, save, write, dial\n";
 	print "  1 - Which config to query: start, run\n";
-	print "  2 - Which section to query: sys, eth, route, peers\n\n";
+	print "  2 - What to handle: sys, eth, route, peers\n\n";
 
 }
 $action = $ARGV[0];
@@ -46,7 +46,7 @@ if ($action eq "startup"){
 	doPeers();
 	print "Copy startup config to running config\n\n";
 	exec `/bin/cp $file_name $file_name_run`;
-	exec `/bin/rm $tmp_filename`;
+	if (-e $tmp_filename) { exec `/bin/rm $tmp_filename`; }
 }
 
 if ($action eq "save"){
@@ -121,6 +121,30 @@ if ($action eq "write"){
 	}
 	if ($ARGV[2] eq "peers") {
 		doPeers();
+	}
+}
+
+if ($action eq "dial"){
+	my $twig= XML::Twig->new();
+	#Which config to query
+	if ($ARGV[1] eq ""){
+		exit 0;
+	}
+	if ($ARGV[1] eq "start") {
+		$file_name = $file_name_start;
+	}
+	if ($ARGV[1] eq "run") {
+		$file_name = $file_name_run;
+	}	
+	$twig->parsefile($file_name);
+	$root = $twig->root;
+	
+	#Which peer to dial
+	if ($ARGV[2] eq ""){
+		exit 0;
+	}
+	if (($ARGV[2] eq "peer") && ($ARGV[3] ne "")) {
+		dialPeers($ARGV[3]);
 	}
 }
 
@@ -254,7 +278,7 @@ sub qryPeers {
     	print $peer_password . ",";
 	    print $peer_mtu . ",";
 	    print $peer_mru . ",";
-	    if ($peer->children_count('persist') == 1){
+	    if (($peer->children_count('persist') == 1)&&($peer->field('persist') eq "1")){
 		    print "1,";
 	    }	
 	    else {
@@ -292,7 +316,7 @@ sub qryPeers {
 #-------------------------#
 sub doSystem {
 	foreach my $systems ($root->children('system')){
-		if ($action eq "start") {
+		if ($action eq "startup") {
 			print "Hostname: " . $systems->field('hostname') . "\n";
 			print "\n";
 		}
@@ -309,7 +333,7 @@ sub doETH {
 		$eth_bitmask = getbitmask($eth_subnet);
 		$eth_mtu = $ethernet->first_child_text('mtu');
 		
-		if ($action eq "start") {
+		if ($action eq "startup") {
 			print "Ethernet:\n";
 		  print " interface: eth0\n";
 		  print " IP address: " . $eth_ipaddr . "\n";
@@ -324,6 +348,7 @@ sub doRoutes {
 	my $count = 0;
 	my $static_routes = "";
 	my $ospf_routes = "";
+	my $ospf_count = 0;
 	foreach my $route ($root->children('route')){
 	  $count += 1;
 	  my $type = $route->att('type');
@@ -333,7 +358,7 @@ sub doRoutes {
     my $gw = $route->field('gateway');
     my $area = $route->field('area');
 	  
-		if ($action eq "start") {
+		if ($action eq "startup") {
 			print "Route " . $count . "\n";
 			print "  type: " . $type . "\n";
 			if ($route->children_count('priority') == 1){
@@ -359,6 +384,7 @@ sub doRoutes {
 		}
 		if ($type eq "ospf") {
 			$ospf_routes = $ospf_routes . "  network " . $network . "/" . $bitmask . " area $area\n";
+			$ospf_count++;
 		}
 	}
 	
@@ -393,18 +419,9 @@ sub doRoutes {
 		print FH "log file /ftp/router.log\n\n";
 		close FH;
 	}
-	my $zebra_pid;
-	my $ospfd_pid;
-
-	$zebra_pid = `/bin/cat /var/run/zebra.pid >> /dev/null`; 
-	$zebra_pid=~ s/\n/ /g;
-
 	my $junk_cmd = "/bin/killall zebra >> /dev/null 2>&1";
 	system $junk_cmd;
 	system "/bin/rm -f /var/run/zebra.pid >> /dev/null 2>&1";
-
-	my $ospfd_pid = `/bin/cat /var/run/ospfd.pid >> /dev/null 2>&1`; 
-	$ospfd_pid =~ s/\n/ /g;
 
 	my $junk_cmd = "/bin/killall ospfd >> /dev/null 2>&1";
 	system $junk_cmd;
@@ -412,7 +429,7 @@ sub doRoutes {
 
 	system "/usr/local/sbin/zebra -d -f /etc/routing/zebra.conf";
 
-	system "/usr/local/sbin/ospfd -d -f /etc/routing/ospfd.conf";
+	if ($ospf_count > 0){	system "/usr/local/sbin/ospfd -d -f /etc/routing/ospfd.conf";}
 
 }
 
@@ -490,6 +507,7 @@ sub doPeers {
 	my $count = 0;
 	foreach my $peer ($root->children('peer')){
 			$count += 1;
+			my $peer_count = $peer->att('peer');
 			my $peer_name = $peer->first_child_text('name');
 			my $peer_localip = $peer->first_child_text('localip');
 			my $peer_remoteip = $peer->first_child_text('remoteip');
@@ -504,7 +522,7 @@ sub doPeers {
 			my $peer_auth = $peer->first_child_text('auth');
 			
 			
-			if ($action eq "start") {
+			if ($action eq "startup") {
 		    print "Peer" . $count . "\n";
 		    print " name: " . $peer_name . "\n";
 		    print " localip: " . $peer_localip . "\n";
@@ -535,21 +553,21 @@ sub doPeers {
 		    print " mru: " . $peer_mtu . "\n";
 		    print " persistent: ";
 		  }
-	    if ($peer->children_count('persist') == 1){
+	    if (($peer->children_count('persist') == 1) && ($peer->field('persist') eq "1")){
 				$peer_persistent = "persist";
-		   	if ($action eq "start") { print "yes\n"; }
+	   		if ($action eq "startup") { print "yes\n"; }
 	    }	
 	    else {
-	    	if ($action eq "start") { print "no\n"; }
+	    	if ($action eq "startup") { print "no\n"; }
 	    }
-	    if ($action eq "start") { print " holdoff: " . $peer_holdoff . "\n";}
+	    if ($action eq "startup") { print " holdoff: " . $peer_holdoff . "\n";}
 	
 	   	my $elt= $peer;
-	   	if ($action eq "start") { print " chan: "; }
+	   	if ($action eq "startup") { print " chan: "; }
 	  	while( $elt= $elt->next_elt($peer, 'chan'))
 	    { 
 	    	my $p = $elt->text;
-		    if ($action eq "start") { print $p . " ";}
+		    if ($action eq "startup") { print $p . " ";}
 	    	open (FH, "> /etc/ppp/peers/isdn/bch".$p);
 	    	print FH "# -*- B Channel " . $p . " -*-\n\n";
 	    	print FH "# Name: ". $peer_name  ."\n\n";
@@ -604,7 +622,20 @@ sub doPeers {
 	    		system "/usr/sbin/pppd call isdn/bch". $p;
 	    	}
 	    }
-	    if ($action eq "start") { print "\n\n";}
+	    if ($action eq "startup") { print "\n\n";}
+	}
+}
+
+sub dialPeers {
+	my $p_dial = @_;
+	foreach my $peer ($root->children('peer')){
+		if ($peer->att('num')==$p_dial){
+			my $elt= $peer;
+	  	while( $elt= $elt->next_elt($peer, 'chan'))
+	    {
+    		system "/usr/sbin/pppd call isdn/bch". $elt->text ."\n";
+	    }
+	  }
 	}
 }
 

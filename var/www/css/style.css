@@ -306,7 +306,7 @@ table.peer{
 	padding: 0px;
 }
 table.peer .pLabel{
-	width: 150px;
+	width: 100px;
 	margin-right: 5px;
 }
 table.peer .pValue{
@@ -322,6 +322,7 @@ table.peer .pCheck{
 	margin: 0px 5px 0px 0px;
 	vertical-align: bottom;
 }
+
 
 table.upgrade{
 	table-layout: fixed;

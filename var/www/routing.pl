@@ -130,6 +130,7 @@ sub doStuff {
 
 	if ($vardata[0] eq "static"){
 		my(@run, $doRoute, @lvars, $i, $j, $net, $mask, $gw);
+		my $route = $vardata[1];
 		if ($varname[14] eq "smod"){
 			if (($vardata[1] > 0 && $vardata[1] < 100) &&
 					($vardata[2] >= 0 && $vardata[2] <= 255) &&
@@ -150,8 +151,12 @@ sub doStuff {
 				$gw 	= $vardata[10].".".$vardata[11].".".$vardata[12].".".$vardata[13];
 				$ok = 1;
 				if ($ok == 1){
-					#$cmd = "/usr/bin/dt/msgsend ". 8195 . " " . $vardata[1] . " "."0 static " .$net." ".$mask." ".$gw." 1";
-					#@run = `$cmd`;
+					if ($vardata[1] == 99){
+						system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route \"static,$route,$net,$mask,$gw\" new";
+					}
+					else {
+						system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route \"static,$route,$net,$mask,$gw\" mod";
+					}
 				}
 			}
 		}
@@ -159,8 +164,7 @@ sub doStuff {
 		if ($varname[14] eq "sdelete"){
 			$ok = 1;
 				if ($ok == 1){
-					#$cmd = "/usr/bin/dt/msgsend ". 8196 . " " . $vardata[1];
-					#@run = `$cmd`;
+					system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route static,$route del";
 				}
 		}
 
@@ -168,6 +172,7 @@ sub doStuff {
 	
 	if ($vardata[0] eq "ospf"){
 		my(@run, $doRoute, @lvars, $i, $j, $net, $mask, $area);
+		my $route = $vardata[1];
 		if ($varname[11] eq "omod"){
 			if (($vardata[1] > 0 && $vardata[1] < 100) &&
 					($vardata[2] >= 0 && $vardata[2] <= 255) &&
@@ -186,8 +191,12 @@ sub doStuff {
 				$rs_num++;
 				$ok = 1;
 				if ($ok == 1){
-					#$cmd = "/usr/bin/dt/msgsend ". 8451 . " " . $vardata[1] . " "."0 ospf " .$net." ".$mask." ".$area." 1";
-					#@run = `$cmd`;
+					if ($vardata[1] == 99){
+						system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route \"ospf,$route,$net,$mask,$area\" new";
+					}
+					else {
+						system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route \"ospf,$route,$net,$mask,$area\" mod";
+					}
 				}
 			}
 		}
@@ -195,8 +204,7 @@ sub doStuff {
 		if ($varname[11] eq "odelete"){
 			$ok = 1;
 				if ($ok == 1){
-					#$cmd = "/usr/bin/dt/msgsend ". 8452 . " " . $vardata[1];
-					#@run = `$cmd`;
+					system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write route ospf,$route del";
 				}
 		}
 	}
@@ -213,7 +221,7 @@ sub getInfo {
 sub getSRoutes {
 	#@rs @rs_entry @rs_def @rs_type @rs_net @rs_mask @rs_gw @rs_pri @rs_iface
 	my($i, @a1, @a2, @a3, @net, @mask, @gw, $x);
-	$x = 0;
+	$x = 1;
 	@a1 = `/usr/bin/perl /usr/bin/dt/scripts/config-read.pl query run route static`;
 	$rs_num = 0;
 	foreach $i(@a1) {
@@ -221,7 +229,7 @@ sub getSRoutes {
 	  if ($i ne ""){
 			$rs[$x] = $a1[$x];
 			@a2 = split(/,/,$i);
-			$rs_entry[$x]	= $x;
+			$rs_entry[$x]	= $a2[1];
 			$rs_type[$x]	= $a2[0];
 			$rs_net[$x]		= $a2[2];
 			$rs_mask[$x]	= $a2[3];
@@ -267,13 +275,14 @@ sub getSRoutes {
 sub getORoutes {
 	#@rs @rs_entry @rs_def @rs_type @rs_net @rs_mask @rs_gw @rs_pri @rs_iface
 	my($i, @a1, @a2, @a3, @net, @mask, @area, $x);
-	$x = 0;
+	$x = 1;
 	@a1 = `/usr/bin/perl /usr/bin/dt/scripts/config-read.pl query run route ospf`;
 	foreach $i(@a1) {
 		chomp($i);
 		if ($i ne ""){
 			@a2 = split(/,/,$i);
-			$ro_entry[$x]	= $x;
+			$x = $a2[1];
+			$ro_entry[$x]	= $a2[1];
 			$ro_type[$x]	= $a2[0];
 			$ro_net[$x]		= $a2[2];
 			$ro_mask[$x]	= $a2[3];
@@ -293,7 +302,6 @@ sub getORoutes {
 					"<input type='checkbox' value='delete_ospf' name='odelete' class='rcheck'>delete&nbsp;<input type='submit' value='Modify' name='omod' class='rbuttons'></div>".
 					"</form>";
 		}
-		$x++;
 	}
 	if ($rs_entry[$x] < 99) {
 		$ro_html = $ro_html .

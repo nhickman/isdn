@@ -69,9 +69,20 @@ sub main {
 				{
 					document.getElementById('pHoldoff').style.backgroundColor = "#ffffff";
 					document.getElementById('pHoldoff').readOnly = 0;
+					document.getElementById('pDialMax').style.backgroundColor = "#ffffff";
+					document.getElementById('pDialMax').readOnly = 0;
+					if($pDialMax==3) {
+						document.getElementById('pDialMax').value=100
+					}
+					else{
+						document.getElementById('pDialMax').value = $pDialMax;					
+					}
 				} else {
 					document.getElementById('pHoldoff').style.backgroundColor = "#808080";
 					document.getElementById('pHoldoff').readOnly = 1;
+					document.getElementById('pDialMax').style.backgroundColor = "#808080";
+					document.getElementById('pDialMax').readOnly = 1;
+					document.getElementById('pDialMax').value = 3;
 				}
 			}
 		// -->
@@ -151,7 +162,7 @@ EOHTML
 
 sub getEnv {
 	my($i, $a, $name);
-
+  $spPersist = 0;
 	$spChan[1] = 0;
 	$spChan[2] = 0;
 	$spChan[3] = 0;
@@ -229,6 +240,9 @@ sub getEnv {
 			if ($name eq "pHoldoff"){
 				$spHoldoff = $vardata[$a];
 			}
+			if ($name eq "pDialMax"){
+				$spDialMax = $vardata[$a];
+			}
 			if ($name eq "pMtu" && $vardata[$a] >= 128 && $vardata[$a] <=16384){
 				$spMtu = $vardata[$a];
 			}
@@ -271,7 +285,7 @@ sub getInfo {
 }
 
 sub getPeer {
-	my (@a1, @a2, @p_byline, @p_byval, $sizeof, $x, $y, $pHoldoffEn, $pAuthUserEn, $pAuthPassEn);
+	my (@a1, @a2, @p_byline, @p_byval, $sizeof, $x, $y, $pHoldoffEn, $pAuthUserEn, $pAuthPassEn, $pDialMaxEn);
   $p = 1;
 	if ($varquery[0] > 0){
 		$p = $varquery[0];
@@ -303,7 +317,9 @@ sub getPeer {
 		#set default values
 		$pAuth = 0;
 		$pAuthUser = "";
+		$pAuthUserEn = "style='background-color: #808080; width: 80px;'";
 		$pAuthPass = "";
+		$pAuthPassEn = "style='background-color: #808080; width: 80px;'";
     $pAuthPap = "";
     $pAuthChap = "";
     $pAuthMSChap = "";
@@ -319,7 +335,9 @@ sub getPeer {
 		$pMtu = 30;
 		$pMtu = 1500;
 		$pMru = 1500;
+		$pPersist = "";
 		$pDialMax = 0;
+		$pDialMaxEn = "style='background-color: #808080; width: 40px;'";
 		$pChan[1] = 0;
 		$pChan[2] = 0;
 		$pChan[3] = 0;
@@ -341,12 +359,18 @@ sub getPeer {
 		$pAuthPass = $p_byval[8];
     if($pAuth & 1){
       $pAuthPap = "checked";
+   		$pAuthUserEn = "style='background-color: #ffffff; width: 80px;'";
+   		$pAuthPassEn = "style='background-color: #ffffff; width: 80px;'";
     }
     if($pAuth & 2){
       $pAuthChap = "checked";
+   		$pAuthUserEn = "style='background-color: #ffffff; width: 80px;'";
+   		$pAuthPassEn = "style='background-color: #ffffff; width: 80px;'";
     }
     if($pAuth & 4){
       $pAuthMSChap = "checked";
+   		$pAuthUserEn = "style='background-color: #ffffff; width: 80px;'";
+   		$pAuthPassEn = "style='background-color: #ffffff; width: 80px;'";
     }
 
 		#Local IP
@@ -367,14 +391,15 @@ sub getPeer {
 
     #Persistent options
 		$pHoldoffEn="style='background-color: #808080; width: 40px;'";
-		if ($p_byval[11] == 1){
+		if ($p_byval[11] eq "1"){
 			$pPersist="checked";
 			$pHoldoffEn="style='background-color: #ffffff; width: 40px;'";
 		}
 		$pHoldoff = $p_byval[12];
 		if ($p_byval[13] eq "") {
-			if ($pPersist == "checked"){
+			if ($pPersist eq "checked"){
 				$pDialMax = 100;
+				$pDialMaxEn = "style='background-color: #ffffff; width: 40px;'";
 			}
 			else {
 				$pDialMax = 3;
@@ -382,6 +407,9 @@ sub getPeer {
 		}
 		else {
 			$pDialMax = $p_byval[13];
+			if ($pPersist eq "checked"){
+				$pDialMaxEn = "style='background-color: #ffffff; width: 40px;'";
+			}				
 		}
 		
 		#MTU and MRU options
@@ -405,7 +433,7 @@ sub getPeer {
 				$a1[8] = $vals[21] +1 -1;
 				for ($y=1;$y<9;$y++){
 					if ($a1[$y] == 1){
-						$pChanUsed[$y]="disabled";
+						$pChanUsed[$y]="checked disabled";
 					}
 				}
 			}
@@ -440,7 +468,7 @@ sub getPeer {
 					"<tr><td class='pLabel'>Dial Number:&nbsp;</td><td colspan=2 class='pValue'><input name='pNumber' type='text' value='".$pNumber."' maxlength=50 style='width: 100px;' /> <i>(acceptable digits: 0-9, #, *)</i></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Auth Type:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPap." class='pCheck' type='checkbox' value='1' name='pAuthPap' id='pAuthPap' onClick='setAuthDisable()' /> <i>(PAP)</i><br><input ".$pAuthChap." class='pCheck' type='checkbox' value='2' name='pAuthChap' id='pAuthChap'  onClick='setAuthDisable()'/> <i>(CHAP)</i><br><input ".$pAuthMSChap." class='pCheck' type='checkbox' value='4' name='pAuthMSChap' id='pAuthMSChap'  onClick='setAuthDisable()'/> <i>(MSCHAP)</i></td></tr>".
+					"<tr><td class='pLabel'>Auth Type:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPap."  type='checkbox' value='1' name='pAuthPap' id='pAuthPap' onClick='setAuthDisable()' /> <i>(PAP)</i><br><input ".$pAuthChap."  type='checkbox' value='2' name='pAuthChap' id='pAuthChap'  onClick='setAuthDisable()'/> <i>(CHAP)</i><br><input ".$pAuthMSChap."  type='checkbox' value='4' name='pAuthMSChap' id='pAuthMSChap'  onClick='setAuthDisable()'/> <i>(MSCHAP)</i></td></tr>".
 					"<tr><td class='pLabel'>Username:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthUserEn." id='pAuthUser' name='pAuthUser' type='text' value='".$pAuthUser."' maxlength=50 style='width: 100px;' /> <i>(if blank we use the routers hostname)</i></td></tr>".
 					"<tr><td class='pLabel'>Password:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPassEn." id='pAuthPass' name='pAuthPass' type='password' value='".$pAuthPass."' maxlength=50 style='width: 100px;' /> <i>(authentication password)</i></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
@@ -449,17 +477,17 @@ sub getPeer {
 					"<tr><td class='pLabel'>Remote IP:&nbsp;</td><td class='pValue'><input name='pRemoteIP1' type='text' value='$pRemoteIP[1]' maxlength=3 style='width: 30px;' />.<input name='pRemoteIP2' type='text' value='$pRemoteIP[2]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP3' type='text' value='$pRemoteIP[3]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP4' type='text' value='$pRemoteIP[4]' maxlength=3 style='width: 30px'/></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Persistant:&nbsp;</td><td colspan=2><input $pPersist class='pCheck' type='checkbox' value='1' name='pPersist' id='pPersist' onClick='setDisable(this)' /> <i>(keeps dialer alive for retry after holdoff expiration)</i></td></tr>".
+					"<tr><td class='pLabel'>Persistant:&nbsp;</td><td colspan=2><input $pPersist  type='checkbox' value='1' name='pPersist' id='pPersist' onClick='setDisable(this)' /> <i>(keeps dialer alive for retry after holdoff expiration)</i></td></tr>".
 					"<tr><td class='pLabel'>Holdoff:&nbsp;</td><td colspan=2 class='pValue'><input ".$pHoldoffEn." id='pHoldoff' name='pHoldoff' type='text' value='".$pHoldoff."' maxlength=5 width=20 /> <i>(holdoff time to redial)</i></td></tr>".
-					"<tr><td class='pLabel'>Max dial:&nbsp;</td><td colspan=2 class='pValue'><input id='pDialMax' name='pDialMax' type='text' value='".$pDialMax."' maxlength=5 width=20 /> <i>(Max attempts at dialing)</i></td></tr>".
+					"<tr><td class='pLabel'>Max dial:&nbsp;</td><td colspan=2 class='pValue'><input ".$pDialMaxEn." id='pDialMax' name='pDialMax' type='text' value='".$pDialMax."' maxlength=5 width=20 /> <i>(Max attempts at dialing)</i></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>MTU:&nbsp;</td><td colspan=2 class='pValue'><input name='pMtu' type='text' value='".$pMtu."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
-					"<tr><td class='pLabel'>MRU:&nbsp;</td><td colspan=2 class='pValue'><input name='pMru' type='text' value='".$pMru."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
+					"<tr><td class='pLabel'>MTU:&nbsp;</td><td colspan=1 class='pValue'><input name='pMtu' type='text' value='".$pMtu."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
+					"<tr><td class='pLabel'>MRU:&nbsp;</td><td colspan=1 class='pValue'><input name='pMru' type='text' value='".$pMru."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>B Channels:&nbsp;</td><td colspan=2><input $pChanUsed[1] $pChanSel[1] class='pCheck' type='checkbox' value='1' name='pChan1' id='pChan1'/><label class='pLabel'>Port1 B1</label><input $pChanUsed[3] $pChanSel[3] class='pCheck' type='checkbox' value='1' name='pChan3'><label class='pLabel'>Port2 B1</label><input $pChanUsed[5] $pChanSel[5] class='pCheck' type='checkbox' value='1' name='pChan5'><label class='pLabel'>Port3 B1</label><input $pChanUsed[7] $pChanSel[7] class='pCheck' type='checkbox' value='1' name='pChan7'><label class='pLabel'>Port4 B1</label></td></tr>".
-					"<tr><td class='pLabel'>&nbsp;</td><td colspan=2><input $pChanUsed[2] $pChanSel[2] class='pCheck' type='checkbox' value='1' name='pChan2'><label class='pLabel'>Port1 B2</label><input $pChanUsed[4] $pChanSel[4] class='pCheck' type='checkbox' value='1' name='pChan4'><label class='pLabel'>Port2 B2</label><input $pChanUsed[6] $pChanSel[6] class='pCheck' type='checkbox' value='1' name='pChan6'><label class='pLabel'>Port3 B2</label><input $pChanUsed[8] $pChanSel[8] class='pCheck' type='checkbox' value='1' name='pChan8'><label class='pLabel'>Port4 B2</label></td></tr>".
+					"<tr><td class='pLabel'>B Channels:&nbsp;</td><td colspan=2><input $pChanUsed[1] $pChanSel[1] class='pCheck'  type='checkbox' value='1' name='pChan1' id='pChan1'/><label class='pLabel'>Port1 B1</label><input $pChanUsed[3] $pChanSel[3] class='pCheck'  type='checkbox' value='1' name='pChan3'><label class='pLabel'>Port2 B1</label><input $pChanUsed[5] $pChanSel[5] class='pCheck'  type='checkbox' value='1' name='pChan5'><label class='pLabel'>Port3 B1</label><input $pChanUsed[7] $pChanSel[7] class='pCheck'  type='checkbox' value='1' name='pChan7'><label class='pLabel'>Port4 B1</label></td></tr>".
+					"<tr><td class='pLabel'>&nbsp;</td><td colspan=2><input $pChanUsed[2] $pChanSel[2] class='pCheck'  type='checkbox' value='1' name='pChan2'><label class='pLabel'>Port1 B2</label><input $pChanUsed[4] $pChanSel[4] class='pCheck'  type='checkbox' value='1' name='pChan4'><label class='pLabel'>Port2 B2</label><input $pChanUsed[6] $pChanSel[6] class='pCheck'  type='checkbox' value='1' name='pChan6'><label class='pLabel'>Port3 B2</label><input $pChanUsed[8] $pChanSel[8] class='pCheck'  type='checkbox' value='1' name='pChan8'><label class='pLabel'>Port4 B2</label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
 					"<tr><td>&nbsp;</td><td colspan=3><input class='pButton' type='submit' value='Commit' name='pCmd'>&nbsp;<input class='pButton' type='submit' value='Dial' name='pCmd'>&nbsp;<input class='pButton' type='submit' value='Hangup' name='pCmd'></td>".
@@ -470,44 +498,27 @@ sub getPeer {
 }
 
 sub peerCommit {
-	my (@a1);
-#$pName @pLocalIP @pRemoteIP $pNumber $pPersist $pHoldoff $pMtu $pMru @pChan @pChanSel @pChanUsed
-
-
-	#@a1 = `/usr/bin/dt/msgsend 522 $p $spName`;
-	#@a1 = `/usr/bin/dt/msgsend 524 $p $spAuth`;
-	#@a1 = `/usr/bin/dt/msgsend 512 $p $spAuthUser`;
-	#@a1 = `/usr/bin/dt/msgsend 513 $p $spAuthPass`;
-	#@a1 = `/usr/bin/dt/msgsend 514 $p $spNumber`;
+	my $localIP = "";
+	my $remIP = "";
 	if ($spLocalIP[1] >= 0 && $spLocalIP[1] <= 255 &&
 		$spLocalIP[2] >= 0 && $spLocalIP[2] <= 255 &&
 		$spLocalIP[3] >= 0 && $spLocalIP[3] <= 255 &&
 		$spLocalIP[4] >= 0 && $spLocalIP[4] <= 255) {
-		#@a1 = `/usr/bin/dt/msgsend 515 $p $spLocalIP[1].$spLocalIP[2].$spLocalIP[3].$spLocalIP[4]`;
+		$localIP = $spLocalIP[1] .".". $spLocalIP[2] .".". $spLocalIP[3] .".". $spLocalIP[4];
 	}
 	if ($spRemoteIP[1] >= 0 && $spRemoteIP[1] <= 255 &&
 		$spRemoteIP[2] >= 0 && $spRemoteIP[2] <= 255 &&
 		$spRemoteIP[3] >= 0 && $spRemoteIP[3] <= 255 &&
 		$spRemoteIP[4] >= 0 && $spRemoteIP[4] <= 255) {
-		#@a1 = `/usr/bin/dt/msgsend 516 $p $spRemoteIP[1].$spRemoteIP[2].$spRemoteIP[3].$spRemoteIP[4]`;
+		$remIP = $spRemoteIP[1] .".". $spRemoteIP[2] .".". $spRemoteIP[3] .".". $spRemoteIP[4];
 	}
-	#@a1 = `/usr/bin/dt/msgsend 517 $p $spPersist`;
-	#@a1 = `/usr/bin/dt/msgsend 518 $p $spHoldoff`;
-	if ($spMru >0){
-		#@a1 = `/usr/bin/dt/msgsend 519 $p $spMru`;
-	}
-	if ($spMru >0){
-		#@a1 = `/usr/bin/dt/msgsend 520 $p $spMtu`;
-	}
-	#@a1 = `/usr/bin/dt/msgsend 521 $p $spChan[1] $spChan[2] $spChan[3] $spChan[4] $spChan[5] $spChan[6] $spChan[7] $spChan[8]`;
-	#@a1 = `/usr/bin/dt/msgsend 523 $p`;
-#	sleep(5);
-
+	my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer \"$p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
+	system $cmd;
 }
 
 sub peerConn {
-#	my @a1 = `/usr/bin/dt/msgsend 772 $p`;
-#	sleep(5);
+	peerCommit();
+	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl dial run peer $p";
 }
 
 sub peerDisc {
