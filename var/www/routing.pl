@@ -239,15 +239,15 @@ sub getSRoutes {
 			@gw 	= split(/\./, $rs_gw[$x]);
 
 			$rs_html = $rs_html .
-				"<form name='routing' action='routing.pl' method='POST' class='routing'>".
-				"<input type='hidden' name='type' value='static'>".
-				"<input type='hidden' name='entry' value=".$rs_entry[$x].">".
-				"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-				"Network:<input name='snet1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input name='snet2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input name='snet3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input name='snet4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-				"Mask:<input name='smask1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input name='smask2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input name='smask3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input name='smask4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-				"Gateway:<input name='sgw1' type='text' value='".$gw[0]."' maxlength=3 style='width: 30px;' />.<input name='sgw2' type='text' value='".$gw[1]."' maxlength=3 style='width: 30px'/>.<input name='sgw3' type='text' value='".$gw[2]."' maxlength=3 style='width: 30px'/>.<input name='sgw4' type='text' value='".$gw[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-				"<input type='checkbox' value='delete_static' name='sdelete' class='rcheck'>delete&nbsp;<input type='submit' value='Modify' name='smod' class='rbuttons'></div>".
-				"</form>";
+				"<form name='routing' action='routing.pl' method='POST' class='routing'>\n".
+				"<input type='hidden' name='type' value='static'>\n".
+				"<input type='hidden' name='entry' value=".$rs_entry[$x].">\n".
+				"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>\n".
+				"Network:<input name='snet1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input name='snet2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input name='snet3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input name='snet4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;\n".
+				"Mask:<input name='smask1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input name='smask2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input name='smask3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input name='smask4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;\n".
+				"Gateway:<input name='sgw1' type='text' value='".$gw[0]."' maxlength=3 style='width: 30px;' />.<input name='sgw2' type='text' value='".$gw[1]."' maxlength=3 style='width: 30px'/>.<input name='sgw3' type='text' value='".$gw[2]."' maxlength=3 style='width: 30px'/>.<input name='sgw4' type='text' value='".$gw[3]."' maxlength=3 style='width: 30px'/>&nbsp;\n".
+				"<input type='checkbox' value='delete_static' name='sdelete' class='rcheck'>delete&nbsp;<input type='submit' value='Modify' name='smod' class='rbuttons'></div>\n".
+				"</form>\n";
 
 			$x++;
 			$rs_num++;
@@ -255,15 +255,15 @@ sub getSRoutes {
 	}
 	if ($rs_entry[$x] < 99) {
 		$rs_html = $rs_html .
-			"<form name='routing' action='routing.pl' method='POST' class='routing'>".
-				"<input type='hidden' name='type' value='static'>".
-			"<input type='hidden' name='entry' value='99'>".
-			"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-			"Network:<input name='snet1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='snet1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='snet1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='snet1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Mask:<input name='smask1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='smask1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='smask1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='smask1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Gateway:<input name='sgw1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='sgw1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='sgw1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='sgw1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;".
-			"<input type='submit' value='add_static' name='smod' style='margin-left: 40px' class='rbuttons'></div>".
-			"</form>";
+			"<form name='routing' action='routing.pl' method='POST' class='routing'>\n".
+				"<input type='hidden' name='type' value='static'>\n".
+			"<input type='hidden' name='entry' value='99'>\n".
+			"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>\n".
+			"Network:<input name='snet1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='snet1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='snet1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='snet1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;\n".
+			"Mask:<input name='smask1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='smask1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='smask1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='smask1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;\n".
+			"Gateway:<input name='sgw1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='sgw1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='sgw1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='sgw1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;\n".
+			"<input type='submit' value='add_static' name='smod' style='margin-left: 40px' class='rbuttons'></div>\n".
+			"</form>\n";
 	}
 
 	$#a1 = 0;
@@ -292,28 +292,28 @@ sub getORoutes {
 			@area 	= split(/\./, $ro_area[$x]);
 	
 			$ro_html = $ro_html .
-					"<form name='routing' action='routing.pl' method='POST' class='routing'>".
-					"<input type='hidden' name='type' value='ospf'>".
-					"<input type='hidden' name='entry' value=".$ro_entry[$x].">".
-					"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-					"Network:<input name='onet1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input name='onet2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input name='onet3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input name='onet4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-					"Mask:<input name='omask1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input name='omask2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input name='omask3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input name='omask4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-					"Area:<input name='oarea1' type='text' value='".$area[0]."' maxlength=10 style='width: 60px;' />" .
-					"<input type='checkbox' value='delete_ospf' name='odelete' class='rcheck'>delete&nbsp;<input type='submit' value='Modify' name='omod' class='rbuttons'></div>".
-					"</form>";
+					"<form name='routing' action='routing.pl' method='POST' class='routing'>\n".
+					"<input type='hidden' name='type' value='ospf'>\n".
+					"<input type='hidden' name='entry' value=".$ro_entry[$x].">\n".
+					"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>\n".
+					"Network:<input name='onet1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input name='onet2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input name='onet3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input name='onet4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;\n".
+					"Mask:<input name='omask1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input name='omask2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input name='omask3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input name='omask4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;\n".
+					"Area:<input name='oarea1' type='text' value='".$area[0]."' maxlength=10 style='width: 60px;' />\n" .
+					"<input type='checkbox' value='delete_ospf' name='odelete' class='rcheck'>delete&nbsp;<input type='submit' value='Modify' name='omod' class='rbuttons'></div>\n".
+					"</form>\n";
 		}
 	}
 	if ($rs_entry[$x] < 99) {
 		$ro_html = $ro_html .
-			"<form name='routing' action='routing.pl' method='POST' class='routing'>".
-			"<input type='hidden' name='type' value='ospf'>".
-			"<input type='hidden' name='entry' value='99'>".
-			"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-			"Network:<input name='onet1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='onet1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='onet1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='onet1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Mask:<input name='omask1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='omask1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='omask1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='omask1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Area:<input name='oarea1011' type='text' value='' maxlength=10 style='width: 60px;' />&nbsp;".
-			"<input type='submit' value='add_ospf' name='omod' style='margin-left: 40px' class='rbuttons'></div>".
-			"</form>";
+			"<form name='routing' action='routing.pl' method='POST' class='routing'>\n".
+			"<input type='hidden' name='type' value='ospf'>\n".
+			"<input type='hidden' name='entry' value='99'>\n".
+			"<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>\n".
+			"Network:<input name='onet1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='onet1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='onet1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='onet1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;\n".
+			"Mask:<input name='omask1011' type='text' value='' maxlength=3 style='width: 30px;' />.<input name='omask1012' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='omask1013' type='text' value='' maxlength=3 style='width: 30px'/>.<input name='omask1014' type='text' value='' maxlength=3 style='width: 30px'/>&nbsp;\n".
+			"Area:<input name='oarea1011' type='text' value='' maxlength=10 style='width: 60px;' />&nbsp;\n".
+			"<input type='submit' value='add_ospf' name='omod' style='margin-left: 40px' class='rbuttons'></div>\n".
+			"</form>\n";
 	}
 	$#a1 = 0;
 	$#a2 = 0;
@@ -322,77 +322,7 @@ sub getORoutes {
 }
 
 sub getBRoutes {
-	#@rs @rs_entry @rs_def @rs_type @rs_net @rs_mask @rs_gw @rs_pri @rs_iface
-	my($i, @a1, @a2, @a3, @net, @mask, @gw, $x);
-	$x = 0;
-	@a1 = `/usr/bin/dt/msgsend 4102`;
-	foreach $i(@a1) {
-		$rs[$x] = $a1[$x];
-		@a2 = split(/ /,$i);
-		$rb_entry[$x]	= $a2[0];
-		$rb_def[$x]		= $a2[1];
-		$rb_type[$x]	= $a2[2];
-		$rb_net[$x]		= $a2[3];
-		$rb_mask[$x]	= $a2[4];
-		$rb_gw[$x]		= $a2[5];
-		$rb_pri[$x]		= $a2[6];
-		$rb_iface[$x]	= $a2[7];
-		@net 	= split(/\./, $rb_net[$x]);
-		@mask 	= split(/\./, $rb_mask[$x]);
-		@gw 	= split(/\./, $rb_gw[$x]);
-
-		$rb_html = $rb_html . "<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-			"Network:<input disabled name='bnet".$x."1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input disabled name='bnet".$x."2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input disabled name='bnet".$x."3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input disabled name='bnet".$x."4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Mask:<input disabled name='bmask".$x."1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input disabled name='bmask".$x."2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input disabled name='bmask".$x."3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input disabled name='bmask".$x."4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Gateway:<input disabled name='bgw".$x."1' type='text' value='".$gw[0]."' maxlength=3 style='width: 30px;' />.<input disabled name='bgw".$x."2' type='text' value='".$gw[1]."' maxlength=3 style='width: 30px'/>.<input disabled name='bgw".$x."3' type='text' value='".$gw[2]."' maxlength=3 style='width: 30px'/>.<input disabled name='bgw".$x."4' type='text' value='".$gw[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"<input type='submit' value='-' name='bdelete' class='sbuttons'></div>";
-
-		$x++;
-	}
-	if ($rb_html == "" ){
-		$rb_html = "To be done.";
-	}
-
-	$#a1 = 0;
-	$#a2 = 0;
-	$#a3 = 0;
-
 }
 
 sub getRRoutes {
-	#@rs @rs_entry @rs_def @rs_type @rs_net @rs_mask @rs_gw @rs_pri @rs_iface
-	my($i, @a1, @a2, @a3, @net, @mask, @gw, $x);
-	$x = 0;
-	@a1 = `/usr/bin/dt/msgsend 4103`;
-	foreach $i(@a1) {
-		$rs[$x] = $a1[$x];
-		@a2 = split(/ /,$i);
-		$rr_entry[$x]	= $a2[0];
-		$rr_def[$x]		= $a2[1];
-		$rr_type[$x]	= $a2[2];
-		$rr_net[$x]		= $a2[3];
-		$rr_mask[$x]	= $a2[4];
-		$rr_gw[$x]		= $a2[5];
-		$rr_pri[$x]		= $a2[6];
-		$rr_iface[$x]	= $a2[7];
-		@net 	= split(/\./, $rr_net[$x]);
-		@mask 	= split(/\./, $rr_mask[$x]);
-		@gw 	= split(/\./, $rr_gw[$x]);
-
-		$rr_html = $rr_html . "<div id='setting'><span id='label' style='width: 50px;'>&nbsp;</span>".
-			"Network:<input name='rnet".$x."1' type='text' value='".$net[0]."' maxlength=3 style='width: 30px;' />.<input name='rnet".$x."2' type='text' value='".$net[1]."' maxlength=3 style='width: 30px'/>.<input name='rnet".$x."3' type='text' value='".$net[2]."' maxlength=3 style='width: 30px'/>.<input name='rnet".$x."4' type='text' value='".$net[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Mask:<input name='rmask".$x."1' type='text' value='".$mask[0]."' maxlength=3 style='width: 30px;' />.<input name='rmask".$x."2' type='text' value='".$mask[1]."' maxlength=3 style='width: 30px'/>.<input name='rmask".$x."3' type='text' value='".$mask[2]."' maxlength=3 style='width: 30px'/>.<input name='rmask".$x."4' type='text' value='".$mask[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"Gateway:<input name='rgw".$x."1' type='text' value='".$gw[0]."' maxlength=3 style='width: 30px;' />.<input name='rgw".$x."2' type='text' value='".$gw[1]."' maxlength=3 style='width: 30px'/>.<input name='rgw".$x."3' type='text' value='".$gw[2]."' maxlength=3 style='width: 30px'/>.<input name='rgw".$x."4' type='text' value='".$gw[3]."' maxlength=3 style='width: 30px'/>&nbsp;".
-			"<input type='submit' value='-' name='rdelete' class='sbuttons'></div>";
-
-		$x++;
-	}
-	if ($rr_html == "" ){
-		$rr_html = "To be done.";
-	}
-
-	$#a1 = 0;
-	$#a2 = 0;
-	$#a3 = 0;
-
 }

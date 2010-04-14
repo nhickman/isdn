@@ -104,7 +104,7 @@ if ($action eq "write"){
 	$twig->parsefile($file_name);
 	$root = $twig->root;
 	
-	#Which section to report
+	#Which section to write
 	if ($ARGV[2] eq "sys") {
 		doSystem();
 	}
@@ -365,6 +365,10 @@ sub doETH {
 		  print " MTU: " . $eth_mtu . "\n";
 		  print "\n";
 		}
+		system "/sbin/ifconfig eth0 down";
+		system "/sbin/ifconfig eth0 $eth_ipaddr netmask $eth_subnet mtu $eth_mtu";
+		system "/sbin/ifconfig eth0 up";
+
 	}
 }
 
@@ -418,14 +422,31 @@ sub doRoutes {
 		print FH "password molybdenum\n\n";
 		print FH "interface eth0\n";
 		print FH "  ip address " . $eth_ipaddr . "/" . $eth_bitmask . "\n\n";
-		print FH "interface ppp1\n\n";
-		print FH "interface ppp2\n\n";
-		print FH "interface ppp3\n\n";
-		print FH "interface ppp4\n\n";
-		print FH "interface ppp5\n\n";
-		print FH "interface ppp6\n\n";
-		print FH "interface ppp7\n\n";
-		print FH "interface ppp8\n\n";
+		print FH "  link-detect\n";
+		print FH "interface ppp1\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp2\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp3\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp4\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp5\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp6\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
+		print FH "interface ppp7\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n";
+		print FH "interface ppp8\n";
+		print FH "  link-detect\n";
+    print FH "  bandwidth 64\n\n";
 		print FH $static_routes . "\n";
 		print FH "log file /ftp/router.log\n\n";
 		close FH;

@@ -10,12 +10,14 @@ require include::CheckConfig;
 
 
 use vars qw(
-	@varname @vardata $line @values $ok $cfgdiff $IP_Prefs
+	@varname @vardata $line @values $ok $cfgdiff $IP_Prefs $maxvar $test
 	$uname $rtr_hostname
 	@iface_status $iface_dhcp_yes $iface_dhcp_no @iface_ipaddr @iface_netmask @iface_gw @iface_dns1 @iface_dns2 $iface_mtu
 );
+
 getEnv();
-if (@varname){
+
+if ($vardata[$maxvar] eq "Commit"){
 	doStuff();
 }
 $cfgdiff = CheckConfig::Check();
@@ -133,7 +135,7 @@ sub main {
 
 					<tr><td colspan=2><img src='../images/spacer.gif' width=1px height=10px></td></tr>
 
-					<tr><td>&nbsp;</td<td class='pLabel'><input class='pButton' type="submit" value="Submit" name="B1"></td></tr>
+					<tr><td>&nbsp;</td<td class='pLabel'><input class='pButton' type="submit" value="Commit" name="pCmd"></td></tr>
 					</table>
 				</form>
 				</fieldset>
@@ -147,7 +149,7 @@ sub main {
 		</div>
 	</div>
 	</center>
-	<br><br>
+	<br><br>$test
 	</body>
 	</html>
 EOHTML
@@ -157,12 +159,13 @@ EOHTML
 
 
 sub getEnv {
-	my($i, $a);
-	read(STDIN, $line, $ENV{'CONTENT_LENGTH'});
-	@values = split(/&/, $line);
+	my($i, $a, $eline, $name);
+	read(STDIN, $eline, $ENV{'CONTENT_LENGTH'});
+	@values = split(/&/, $eline);
 	$a=0;
 	foreach $i(@values) {
-		($varname[$a], $vardata[$a]) = split(/=/, $i);
+		$maxvar = $a;
+		($name, $vardata[$a]) = split(/=/, $i);
 		$vardata[$a] =~ tr/+/ /;
 		$vardata[$a] =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
 		$a++;
@@ -230,14 +233,13 @@ sub doStuff {
 
 	#set hostname
 	if ($ok == 1){
-		$cmd = "/bin/echo " . $hostname. " > /etc/HOSTNAME";
-		@run = `$cmd`;
+		system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write run sys $hostname";
 	}
 
 	# check for DHCP the set ip addresses
 	if ($dhcp == 0 && $ok == 1){
-		$cmd = "/sbin/ifconfig eth0 " . $ipaddr . " netmask "  . $subnet . " mtu " . $mtu;
-		@run = `$cmd`;
+		#$test = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write eth \"0,$ipaddr,$subnet,$mtu\" mod";
+		system "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write eth \"0,$ipaddr,$subnet,$mtu\" mod";
 	}
 }
 

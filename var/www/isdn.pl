@@ -512,7 +512,9 @@ sub peerCommit {
 		$spRemoteIP[4] >= 0 && $spRemoteIP[4] <= 255) {
 		$remIP = $spRemoteIP[1] .".". $spRemoteIP[2] .".". $spRemoteIP[3] .".". $spRemoteIP[4];
 	}
-	my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer \"$p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
+	my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer ";
+	$cmd = $cmd ."\". $p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
+	$cmd = $cmd ."$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
 	system $cmd;
 }
 

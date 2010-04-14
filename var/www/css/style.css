@@ -112,18 +112,19 @@ BODY { background-color: black; margin: 0px 0px 0px 0px; min-width: 100%; max-wi
 
 #content #colFull {
 	float: left;
-	width: 950px;
+	width: 960px;
 	border: 0px;
 	border-color: white;
 	border-style: dotted;
 	margin: 0px 10px 0px 0px;
-	padding-left: 20px;
+	padding-left: 0px;
 }
 
 fieldset {
+	width: 970px;
 	background-color: #303030;
 	padding: 0px 3px 5px 3px;
-	margin: 0px 5px 7px 5px;
+	margin: 2px 5px 10px 10px;
 	border: 2px;
 	border-color: #bfcfcf;
 	border-style: groove groove none groove;

@@ -23,7 +23,7 @@ my %pData;
 
 getEnv();
 getInfo();
-if ($spCmd eq "Commit"){
+if ($vardata[$maxvar] eq "Commit"){
 	peerCommit();
 }
 getPeer();
@@ -545,64 +545,13 @@ sub getPeer {
 
 sub peerCommit {
 	my (@a1);
-	
-#define M_CMD_PEER_OSPF_NETWORK   				0x0220  /* 544 */
-#define M_CMD_PEER_OSPF_AUTH   						0x0221  /* 545 */
-#define M_CMD_PEER_OSPF_AUTH_KEY   				0x0222  /* 546 */
-#define M_CMD_PEER_OSPF_MESG_DIGEST_KEY   0x0223  /* 547 */
-#define M_CMD_PEER_OSPF_COST   						0x0224  /* 548 */
-#define M_CMD_PEER_OSPF_DEAD_INT   				0x0225  /* 549 */
-#define M_CMD_PEER_OSPF_HELLO_INT   			0x0226  /* 550 */
-#define M_CMD_PEER_OSPF_RETRANS_INT   		0x0227  /* 551 */
-#define M_CMD_PEER_OSPF_TRANS_DELAY   		0x0228  /* 552 */
-#define M_CMD_PEER_OSPF_MTU_IGNORE   			0x0229  /* 553 */
-#define M_CMD_PEER_OSPF_PRIORITY   				0x022A  /* 554 */
-
-#define M_CMD_OSPF_START	0x2100	/* 8448	*/
-#define M_CMD_OSPF_WCONFIG	0x2102	/* 8450	*/
-
+	$p = $vardata[0];
 	if ($p > 0 && $p < 9){
-		@a1 = `/usr/bin/dt/msgsend 544 $p $spNetwork`;
-		
-		if ($spAuth == 1) {
-			#Auth type 1-Auth Key 2-Null 3-MD Key
-			@a1 = `/usr/bin/dt/msgsend 545 $p $spAuthType`;
-  		#Auth Key if not blank and type is 1
-  		if ($spAuthKey ne "" && $spAuthType == 1){
-					@a1 = `/usr/bin/dt/msgsend 546 $p $spAuthKey`;
-			}
-	  	#message-digest if not 0 and type is 3
-  		if ($spMessKeyID > 0 && $spMessKeyID < 256 && $spAuthType == 3){
-				@a1 = `/usr/bin/dt/msgsend 547 $p $spMessKeyID $spMessKeyPass`;
-			}
-		}
-		else {
-			#Auth type 0 for disable
-			@a1 = `/usr/bin/dt/msgsend 545 $p $spAuth`;
-		}
-		
-	  #cost
-		@a1 = `/usr/bin/dt/msgsend 548 $p $spCost`;
-	  #MTU-Ignore
-		@a1 = `/usr/bin/dt/msgsend 553 $p $spMTU`;
-
-		if ($spTimerDefaults == 1){
-	  	#Timer Dead Interval
-			@a1 = `/usr/bin/dt/msgsend 549 $p $spIntDead`;
-	  	#Timer Hello Interval
-			@a1 = `/usr/bin/dt/msgsend 550 $p $spIntHello`;
-	  	#Timer Retrans Interval
-			@a1 = `/usr/bin/dt/msgsend 551 $p $spIntRetrans`;
-	  	#Timer Transmit-Delay Interval
-			@a1 = `/usr/bin/dt/msgsend 552 $p $spIntTrans`;
-		}
-		
+					
 		#write OSPF config
-		@a1 = `/usr/bin/dt/msgsend 8450`;
-		sleep(.5);
-
-		#restart service
-		@a1 = `/usr/bin/dt/msgsend 8448`;
+		my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write ospfopts ";
+		$cmd = $cmd ."\"$p,$spNetwork,$spAuthType,$spAuthKey,$spMessKeyID,$spMessKeyPass,$spCost,$spIntDead,$spIntHello,$spIntRetrans,$spIntTrans,$spMTU\" mod";
+		system $cmd;
 		
 	}
 

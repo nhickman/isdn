@@ -52,7 +52,7 @@ sub main {
 		<div id='content'>
 			<h2>System Information</h2>
 			<div id='col0'>
-				<fieldset>
+				<fieldset style='width:450px;'>
 					<legend>Router</legend>
 					<div id='setting'><span id='label'>Hostname: </span>$rtr_hostname</div>
 					<div id='setting'><span id='label'>Model: </span>$rtr_model</div>
@@ -61,7 +61,7 @@ sub main {
 				</fieldset>
 			</div>
 			<div id='col1'>
-				<fieldset style='height:80px;'>
+				<fieldset style='height:80px; width:450px;'>
 					<legend>Services</legend>
 					<div id='setting'><span id='label'>Static Router: </span>$service_zebra</div>
 					<div id='setting'><span id='label'>OSPF Router: </span>$service_ospfd</div>
@@ -69,7 +69,7 @@ sub main {
 			</div>	<br clear='all'>
 			<h2>Ethernet Information</h2>
 			<div id='col0'>
-				<fieldset>
+				<fieldset style='width:450px;'>
 					<legend>$iface_name[0]</legend>
 					<div id='setting'><span id='label'>Status: </span>$iface_status[0]</div>
 					<img src='images/spacer.gif' width=1px height=6px>
@@ -78,7 +78,7 @@ sub main {
 					<div id='setting'><span id='label'>IP Broadcast: </span>$iface_bcast[0]</div>
 					<div id='setting'><span id='label'>IP Netmask: </span>$iface_netmask[0]</div>
 				</fieldset>
-				<fieldset>
+				<fieldset style='width:450px;'>
 					<legend>$iface_name[0] - statistics</legend>
 					<div id='setting'><span id='label'>RX Bytes: </span>$iface_rxbytes[0] $iface_rxunits[0]</div>
 					<div id='setting'><span id='label'>TX Bytes: </span>$iface_txbytes[0] $iface_txunits[0]</div>
@@ -91,7 +91,7 @@ sub main {
 				</fieldset>
 			</div>
 			<div id='col1'>
-				<fieldset>
+				<fieldset style='width:450px;'>
 					<legend>$iface_name[1]</legend>
 					<div id='setting'><span id='label'>Status: </span>$iface_status[1]</div>
 					<img src='images/spacer.gif' width=1px height=6px>
@@ -100,7 +100,7 @@ sub main {
 					<div id='setting'><span id='label'>IP Broadcast: </span>$iface_bcast[1]</div>
 					<div id='setting'><span id='label'>IP Netmask: </span>$iface_netmask[1]</div>
 				</fieldset>
-				<fieldset>
+				<fieldset style='width:450px;'>
 					<legend>$iface_name[1] - statistics</legend>
 					<div id='setting'><span id='label'>RX Bytes: </span>$iface_rxbytes[1] $iface_rxunits[1]</div>
 					<div id='setting'><span id='label'>TX Bytes: </span>$iface_txbytes[1] $iface_txunits[1]</div>

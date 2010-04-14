@@ -42,7 +42,7 @@ if (($cmd eq "write") && ($area eq "sys")){
 
 if (($cmd eq "write") && ($area eq "eth")){ 
 	open FH, '>', $out_file or die;
-	doEthernet();
+	doEthernet($value, $action);
 	$twig->flush(\*FH, pretty_print => 'indented');
 	close FH;
 	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
@@ -51,6 +51,14 @@ if (($cmd eq "write") && ($area eq "eth")){
 if (($cmd eq "write") && ($area eq "route")){ 
 	open FH, '>', $out_file or die;
 	doRoute($value, $action);
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
+}
+
+if (($cmd eq "write") && ($area eq "ospfopts")){ 
+	open FH, '>', $out_file or die;
+	doOSPFOpts($value, $action);
 	$twig->flush(\*FH, pretty_print => 'indented');
 	close FH;
 	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
@@ -74,37 +82,37 @@ sub doSystem {
 		$ele->paste('last_child', $systems);
 	}
 
-	system `/bin/echo $new_hostname > /etc/HOSTNAME`;
+	system "/bin/echo $new_hostname > /etc/HOSTNAME";
 }
 
 sub doEthernet {
-	my @byline = $value;
-	my @byvar = split(/,/, $byline[0]);
-	my $eth_iface = $byvar[0];
-	my $eth_ip = $byvar[1];
-	my $eth_subnet = $byvar[2];
-	my $eth_mtu = $byvar[3];
+	my @args = @_;
+	my $value = $args[0];
+	my $actio = $args[1];
+	my @val = split(/,/, $value);
+	if (($value eq "") || ($action eq "")) { exit 0; }
+	my $eth_iface = $val[0];
+	my $eth_ip = $val[1];
+	my $eth_subnet = $val[2];
+	my $eth_mtu = $val[3];
 	
-	
-	foreach my $eth ($root->children('ethernet')){
-		my $ele;
+	if ($action eq "mod") {
+		foreach my $eth ($root->children('ethernet')){
+			my $ele;
+			$eth->cut_children;
 
-		$eth->del_att('iface');
-		$eth->set_att('iface', $eth_iface);
+			$ele = new XML::Twig::Elt('ipaddress', $eth_ip);
+			$ele->paste('last_child', $eth);
 
-		$eth->cut_children;
+			$ele = new XML::Twig::Elt('subnet', $eth_subnet);
+			$ele->paste('last_child', $eth);
 
-		$ele = new XML::Twig::Elt('ipaddress', $eth_ip);
-		$ele->paste('last_child', $eth);
-
-		$ele = new XML::Twig::Elt('subnet', $eth_subnet);
-		$ele->paste('last_child', $eth);
-
-		$ele = new XML::Twig::Elt('mtu', $eth_mtu);
-		$ele->paste('last_child', $eth);
+			$ele = new XML::Twig::Elt('mtu', $eth_mtu);
+			$ele->paste('last_child', $eth);
+		}
+		#change IP through zebra
+		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run eth";
 	}
-	#change IP through zebra
-	#system `/sbin/ifconfig $new_hostname > /etc/HOSTNAME`;
 }
 
 sub doRoute {
@@ -198,6 +206,131 @@ sub doRoute {
 	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run route";
 }
 
+sub doOSPFOpts {
+	my $ele;
+	my @args = @_;
+	my $value = $args[0];
+	print "value = $value";
+	my $action = $args[1];
+	if (($value eq "") || ($action eq "")) { exit 0; }
+	my @val = split(/,/, $args[0]);
+	my $opt_peer = 						$val[0];
+	my $opt_network = 				$val[1];
+	my $opt_auth = 						$val[2];
+	my $opt_auth_key = 				$val[3];
+	my $opt_msg_digest_id = 	$val[4];
+	my $opt_msg_digest_key = 	$val[5];
+  my $opt_cost = 						$val[6];
+  my $opt_dead_int = 				$val[7];
+  my $opt_hello_int = 			$val[8];
+  my $opt_retrans_int = 		$val[9];
+  my $opt_trans_delay = 		$val[10];
+  my $opt_mtu_ignore = 			$val[11];
+  my $opt_priority = 				$val[12];
+  my $opt_matched = 0;
+  	
+
+	#modify existing route
+	if ($action eq "mod"){
+		#select new element
+		foreach my $opt ($root->children('ospf_opt')){
+			if ($opt->att('peer') eq $opt_peer) {
+				$opt_matched=1;
+				
+				$opt->set_att('peer', $opt_peer);
+				
+				$opt->cut_children;
+	
+				$ele = new XML::Twig::Elt('ospf_network', $opt_network);
+				$ele->paste('last_child', $opt);
+		
+				$ele = new XML::Twig::Elt('ospf_auth', $opt_auth);
+				$ele->paste('last_child', $opt);
+		
+				$ele = new XML::Twig::Elt('ospf_auth_key', $opt_auth_key);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_message_digest_key_id', $opt_msg_digest_id);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_message_digest_key_pass', $opt_msg_digest_key);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_cost', $opt_cost);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_dead_interval', $opt_dead_int);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_hello_interval', $opt_hello_int);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_retransmit_interval', $opt_retrans_int);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_trasmit_delay', $opt_trans_delay);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('ospf_mtu_ignore', $opt_mtu_ignore);
+				$ele->paste('last_child', $opt);
+				
+				$ele = new XML::Twig::Elt('opt_priority', $opt_priority);
+				$ele->paste('last_child', $opt);
+			}
+		}
+		if ($opt_matched == 0) {$action = "new";}
+	}
+
+	#create a new route
+	if ($action eq "new") {		
+		#create new element
+		$ele = XML::Twig::Elt->new('ospf_opt');
+		$ele->paste('last_child', $root);
+
+		#select new element
+		my $opt = $root->last_child('ospf_opt');
+		$opt->set_att('peer', $opt_peer);
+		
+		$ele = new XML::Twig::Elt('ospf_network', $opt_network);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_auth', $opt_auth);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_auth_key', $opt_auth_key);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_message_digest_key_id', $opt_msg_digest_id);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_message_digest_key_pass', $opt_msg_digest_key);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_cost', $opt_cost);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_dead_interval', $opt_dead_int);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_hello_interval', $opt_hello_int);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_retransmit_interval', $opt_retrans_int);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_trasmit_delay', $opt_trans_delay);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('ospf_mtu_ignore', $opt_mtu_ignore);
+		$ele->paste('last_child', $opt);
+		
+		$ele = new XML::Twig::Elt('opt_priority', $opt_priority);
+		$ele->paste('last_child', $opt);
+	}
+	
+	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run route";
+}
+
 sub doPeer {
 	my $ele;
 	my @args = @_;
@@ -286,7 +419,7 @@ sub doPeer {
 		
 				my $x;
 				for ($x=1;$x<9;$x++){
-					if ($p_chan[$x] eq "0"){
+					if ($p_chan[$x] eq "1"){
 						$ele = new XML::Twig::Elt('chan', $x);
 						$ele->paste('last_child', $p);
 					}
@@ -371,7 +504,7 @@ sub doPeer {
 
 		my $x;
 		for ($x=1;$x<9;$x++){
-			if ($p_chan[$x] eq "0"){
+			if ($p_chan[$x] eq "1"){
 				$ele = new XML::Twig::Elt('chan', $x);
 				$ele->paste('last_child', $p);
 			}
