@@ -54,9 +54,9 @@ sub main {
 			<div id='col0'>
 				<fieldset style='width:450px;'>
 					<legend>Router</legend>
-					<div id='setting'><span id='label'>Hostname: </span>$rtr_hostname</div>
-					<div id='setting'><span id='label'>Model: </span>$rtr_model</div>
-					<div id='setting'><span id='label'>Firmware: </span>$rtr_fsversion</div>
+					<div id='setting'><span id='label'>Hostname: </span>$rtr_hostname$nbsp;</div>
+					<div id='setting'><span id='label'>Model: </span>$rtr_model$nbsp;</div>
+					<div id='setting'><span id='label'>Firmware: </span>$rtr_fsversion$nbsp;</div>
 					<img src='images/spacer.gif' width=1px height=30px>
 				</fieldset>
 			</div>
