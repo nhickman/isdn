@@ -633,7 +633,21 @@ sub dialPeers {
 			my $elt= $peer;
 	  	while( $elt= $elt->next_elt($peer, 'chan'))
 	    {
-    		system "/usr/sbin/pppd call isdn/bch". $elt->text ."\n";
+	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $elt->text ." | awk '{print $2}'` >> /dev/null 2>&1";
+    		system "/usr/sbin/pppd call isdn/bch". $elt->text ." >> /dev/null 2>&1";
+	    }
+	  }
+	}
+}
+
+sub hangPeer {
+	my $p_dial = @_;
+	foreach my $peer ($root->children('peer')){
+		if ($peer->att('num')==$p_dial){
+			my $elt= $peer;
+	  	while( $elt= $elt->next_elt($peer, 'chan'))
+	    {
+	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $elt->text ." | awk '{print $2}'` >> /dev/null 2>&1";
 	    }
 	  }
 	}
