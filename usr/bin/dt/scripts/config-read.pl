@@ -19,7 +19,7 @@ my $action;
 
 ##
 ## Args
-##	0 - What are we doing: startup, query
+##	0 - What are we doing: startup, query, write, dial, hang
 ##  1 - Which config to query: start, run
 ##  2 - Which section to query: sys, eth, route, peers
 ##
@@ -145,6 +145,30 @@ if ($action eq "dial"){
 	}
 	if (($ARGV[2] eq "peer") && ($ARGV[3] ne "")) {
 		dialPeers($ARGV[3]);
+	}
+}
+
+if ($action eq "hang"){
+	my $twig= XML::Twig->new();
+	#Which config to query
+	if ($ARGV[1] eq ""){
+		exit 0;
+	}
+	if ($ARGV[1] eq "start") {
+		$file_name = $file_name_start;
+	}
+	if ($ARGV[1] eq "run") {
+		$file_name = $file_name_run;
+	}	
+	$twig->parsefile($file_name);
+	$root = $twig->root;
+	
+	#Which peer to dial
+	if ($ARGV[2] eq ""){
+		exit 0;
+	}
+	if (($ARGV[2] eq "peer") && ($ARGV[3] ne "")) {
+		hangPeers($ARGV[3]);
 	}
 }
 

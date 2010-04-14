@@ -522,6 +522,5 @@ sub peerConn {
 }
 
 sub peerDisc {
-#	my @a1 = `/usr/bin/dt/msgsend 773 $p`;
-#	sleep(5);
+	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl hang run peer $p";
 }
