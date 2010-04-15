@@ -5,7 +5,9 @@
 use XML::Twig;
 use strict;
 
-my $args = $#ARGV + 1;
+my $args = $#ARGV;
+my $debug = 0;
+if ($debug){ print "config-write: args = $args\n"; }
 
 my $eth_ipaddr;
 my $eth_subnet;
@@ -25,56 +27,40 @@ my $out_file = "/ftp/.cfgdiff";
 ##  3 - New or delete?: new, del
 ##
 if ($args < 3) {
+	if ($debug){ print "config-write: args = $args.  Die.\n"; }
 	exit 0;
 }
 my ($cmd, $area, $value, $action)=@ARGV;
-my $twig= new XML::Twig;
-$twig->parsefile($in_file);
-my $root = $twig->root;
 	
 if (($cmd eq "write") && ($area eq "sys")){ 
-	open FH, '>', $out_file or die;
 	doSystem();
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
-	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 }
 
 if (($cmd eq "write") && ($area eq "eth")){ 
-	open FH, '>', $out_file or die;
 	doEthernet($value, $action);
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
-	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 }
 
 if (($cmd eq "write") && ($area eq "route")){ 
-	open FH, '>', $out_file or die;
 	doRoute($value, $action);
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
-	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 }
 
 if (($cmd eq "write") && ($area eq "ospfopts")){ 
-	open FH, '>', $out_file or die;
 	doOSPFOpts($value, $action);
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
-	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 }
 
 if (($cmd eq "write") && ($area eq "peer")){ 
-	open FH, '>', $out_file or die;
 	doPeer($value, $action);
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
-	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 }
 
 exit 0;
 
 sub doSystem {
+	my $twig= new XML::Twig;
+	$twig->parsefile($in_file);
+	my $root = $twig->root;
+	#open XML file for writing
+	open FH, '>', $out_file or die;
+
 	my $new_hostname = chomp($value);
 	foreach my $systems ($root->children('system')){
 		$systems->cut_children;
@@ -82,10 +68,21 @@ sub doSystem {
 		$ele->paste('last_child', $systems);
 	}
 
+	#Flush the rest of the data in memory and dump to XML
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
+
 	system "/bin/echo $new_hostname > /etc/HOSTNAME";
 }
 
 sub doEthernet {
+	my $twig= new XML::Twig;
+	$twig->parsefile($in_file);
+	my $root = $twig->root;
+	#open XML file for writing
+	open FH, '>', $out_file or die;
+
 	my @args = @_;
 	my $value = $args[0];
 	my $actio = $args[1];
@@ -95,6 +92,7 @@ sub doEthernet {
 	my $eth_ip = $val[1];
 	my $eth_subnet = $val[2];
 	my $eth_mtu = $val[3];
+  my $mod = 0;
 	
 	if ($action eq "mod") {
 		foreach my $eth ($root->children('ethernet')){
@@ -109,13 +107,25 @@ sub doEthernet {
 
 			$ele = new XML::Twig::Elt('mtu', $eth_mtu);
 			$ele->paste('last_child', $eth);
+			$mod = 1;
 		}
-		#change IP through zebra
-		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run eth";
 	}
+	#Flush the rest of the data in memory and dump to XML
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
+
+	#change IP through zebra
+	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run eth";
 }
 
 sub doRoute {
+	my $twig= new XML::Twig;
+	$twig->parsefile($in_file);
+	my $root = $twig->root;
+	#open XML file for writing
+	open FH, '>', $out_file or die;
+
 	my $ele;
 	my @args = @_;
 	my $value = $args[0];
@@ -203,10 +213,21 @@ sub doRoute {
 			}
 		}
 	}
+	#Flush the rest of the data in memory and dump to XML
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
+
 	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run route";
 }
 
 sub doOSPFOpts {
+	my $twig= new XML::Twig;
+	$twig->parsefile($in_file);
+	my $root = $twig->root;
+	#open XML file for writing
+	open FH, '>', $out_file or die;
+
 	my $ele;
 	my @args = @_;
 	my $value = $args[0];
@@ -327,11 +348,22 @@ sub doOSPFOpts {
 		$ele = new XML::Twig::Elt('opt_priority', $opt_priority);
 		$ele->paste('last_child', $opt);
 	}
+
+	#Flush the rest of the data in memory and dump to XML
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
 	
 	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run route";
 }
 
 sub doPeer {
+	my $twig= new XML::Twig;
+	$twig->parsefile($in_file);
+	my $root = $twig->root;
+	#open XML file for writing
+	open FH, '>', $out_file or die;
+
 	my $ele;
 	my @args = @_;
 	my $value = $args[0];
@@ -367,6 +399,7 @@ sub doPeer {
 		$p_matched = 1;
 	}
 	if ($p_matched == 1){
+		
 		#set to matched peer or new entry
 		$p = $p2;
 		
@@ -414,12 +447,33 @@ sub doPeer {
 
 		for ($x=14;$x<=21;$x++){
 			if ($val[$x] eq "1"){
-				$ele = new XML::Twig::Elt('chan', $x - 13);
+				my $y = $x;
+				$y = $x - 13;
+#				print "writing chan(". $y .")\n";
+				$ele = new XML::Twig::Elt('chan', $y);
 				$ele->paste('last_child', $p);
 			}
 		}
 	}
-	system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run peers";
+	#Flush the rest of the data in memory and dump to XML
+	$twig->flush(\*FH, pretty_print => 'indented');
+	close FH;
+	if ($p_matched){
+		#hangup peer before we modify it
+		if ($debug){ print "config-write: peer $val[0] matched.  Call hang-up $val[0].\n"; }
+		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl hang run peer ". $val[0];
+
+		#copy temp file to running config
+		if ($debug){ print "config-write: Copy temp config to running conifg.\n"; }
+		system `/bin/cp /ftp/.cfgdiff /ftp/config-run.xml`;
+
+		#give time for peers to release
+		sleep 3;
+
+		#tell config-read to wring new peer configs from new config-run.xml
+		if ($debug){ print "config-write: Call config-read for writing peer $val[0].\n"; }
+		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run peers";
+	}
 }
 
 

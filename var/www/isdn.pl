@@ -7,7 +7,6 @@ use CGI;
 use CGI::Ajax;
 require include::CheckConfig;
 
-
 use vars qw(
 	%querystring %postfield
 	@varquery @vardata $maxvar $qline $pline @values $ok $cfgdiff $temp
@@ -16,9 +15,11 @@ use vars qw(
 	@pLink
 	$pName $pAuth $pAuthPap $pAuthChap $pAuthMSChap $pAuthUser $pAuthPass @pLocalIP @pRemoteIP $pNumber $pPersist $pHoldoff $pDialMax $pMtu $pMru @pChan @pChanSel @pChanUsed
 	$spName $spAuth $spAuthPap $spAuthChap $spMSChap $spAuthUser $spAuthPass @spLocalIP @spRemoteIP $spNumber $spPersist $spHoldoff $spDialMax $spMtu $spMru @spChan @spChanSel @spChanUsed
-	$pDebugView $pDebugReload
+	$debug $pDebugView $pDebugReload
 );
 my %pData;
+
+$debug = 0;
 
 getEnv();
 getInfo();
@@ -40,7 +41,7 @@ my $ajax = CGI::Ajax->new( 'getInfo' => \&getInfo );
 print $ajax->build_html ( $cgi, \&main );
 
 sub main {
-
+	if ($debug == 0) { $temp = "";}
 	my $html = <<EOHTML;
 	<html>
 	<head>
@@ -140,6 +141,7 @@ sub main {
 				<img src='../images/spacer.gif' width=1px height=10px>
 				<form name='peer' action="isdn.pl?p=$vardata[0]" method="POST">
 					<input type='hidden' name='peer' value="$p">
+					<input type='hidden' name='d' value="$debug">
 					$pDisplay
 				</form>
 				</fieldset>
@@ -180,25 +182,37 @@ sub getEnv {
 	$qline = $ENV{'QUERY_STRING'};
 	@values = split(/&/, $qline);
 	$a=0;
+	$temp = $temp . "<br>qline - " . $qline;
 	if ($values[0] ne ""){
 		foreach $i(@values) {
 			($name, $varquery[$a]) = split(/=/, $i);
-			if ($name eq "peer"){
+			$temp = $temp . "<br>name = " . $name . " = ". $varquery[$a];
+			if ($name eq "p"){
 				$p = $varquery[$a];
+				$temp = $temp . "<br>p = " . $p;
+			}
+			if ($name eq "d"){
+				$debug = 1;
 			}
 			$a++;
 		}
 	}
 
 	read(STDIN, $pline, $ENV{'CONTENT_LENGTH'});
+	$temp = $temp . "<br>pline - " . $pline;
 	@values = split(/&/, $pline);
 	$a=0;
 	if ($values[0] ne ""){
 		foreach $i(@values) {
+	
 			$maxvar = $a;
 			($name, $vardata[$a]) = split(/=/, $i);
 			$vardata[$a] =~ tr/+/ /;
 			$vardata[$a] =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+			if ($name eq "d"){
+				$debug = 1;
+			}
+
 			if ($name eq "peer"){
 				$p = $vardata[$a];
 			}
@@ -292,17 +306,9 @@ sub getInfo {
 }
 
 sub getPeer {
+	$temp = $temp . "<br>getPeer($p)";
+	
 	my (@a1, @a2, @p_byline, @p_byval, $sizeof, $x, $y, $pHoldoffEn, $pAuthUserEn, $pAuthPassEn, $pDialMaxEn);
-  $p = 1;
-	if ($varquery[0] > 0){
-		$p = $varquery[0];
-	}
-	else {
-		if ($vardata[0] > 0) {
-			$p = $vardata[0];
-		}
-	}
-
 	
 	for($x=1;$x<9;$x++){
 		#Peer Names
@@ -312,15 +318,19 @@ sub getPeer {
 	@p_byline = `perl /usr/bin/dt/scripts/config-read.pl query run peers`;
 	$sizeof = @p_byline;
 	$x = 0;
+	$y = 0;
 	foreach my $line (@p_byline){
 		chomp($line);
+		$temp = $temp . "<br>". $line;
 		@a1 = split(/,/, $line);
 		if ($a1[1] ne "") { $pLink[$a1[0]] = $a1[1]; }
-		if ($p eq $a1[0]) { $y = $x; }
+		
+		if ($p == $a1[0]) {
+			$temp = $temp . "<br>a1[0]=$a1[0] a1[1]=$a1[1]";
+			@p_byval = split(/,/, $p_byline[$x]);
+		}
 		$x++;
 	}
-	
-	@p_byval = split(/,/, $p_byline[$y]);
   
 	$pDisplay="<div>Select peer to configure</div>";
 	if ($p > 0 && $p < 9){

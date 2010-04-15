@@ -1,7 +1,9 @@
 use XML::Twig;
 use strict;
 
-my $args = $#ARGV + 1;
+my $args = $#ARGV;
+my $debug = 0;
+if ($debug){ print "config-read: args = $args\n"; }
 
 my $eth_ipaddr;
 my $eth_subnet;
@@ -14,6 +16,7 @@ my $file_name_start = $debug_filename . '/ftp/config.xml';
 my $file_name_run = $debug_filename . '/ftp/config-run.xml';
 my $tmp_filename = $debug_filename . "/ftp/.cfgdiff";
 my $root = "";
+my $p_needsdial = 0;
 my $action;
 
 
@@ -23,7 +26,7 @@ my $action;
 ##  1 - Which config to query: start, run
 ##  2 - Which section to query: sys, eth, route, peers
 ##
-if ($args == 0) {
+if ($args == -1) {
 	print "Requires arguments,\n\n";
 	print "Args\n";
 	print "  0 - What are we doing: startup, query, save, write, dial\n";
@@ -90,6 +93,7 @@ if ($action eq "query"){
 }
 
 if ($action eq "write"){
+	if ($debug) { print "config-read:  Writing $ARGV[2] $ARGV[3]\n"; }
 	my $twig= XML::Twig->new();
 	#Which config to query
 	if ($ARGV[1] eq ""){
@@ -121,7 +125,9 @@ if ($action eq "write"){
 	}
 	if ($ARGV[2] eq "peers") {
 		doPeers();
+		if ($p_needsdial > 0) { dialPeers($ARGV[2]); }
 	}
+	$twig->purge;
 }
 
 if ($action eq "dial"){
@@ -168,7 +174,7 @@ if ($action eq "hang"){
 		exit 0;
 	}
 	if (($ARGV[2] eq "peer") && ($ARGV[3] ne "")) {
-		hangPeers($ARGV[3]);
+		hangPeer($ARGV[3]);
 	}
 }
 
@@ -366,7 +372,7 @@ sub doETH {
 		  print " MTU: " . $eth_mtu . "\n";
 		  print "\n";
 		}
-		system "/sbin/ifconfig eth0 down";
+		#system "/sbin/ifconfig eth0 down";
 		system "/sbin/ifconfig eth0 $eth_ipaddr netmask $eth_subnet mtu $eth_mtu";
 		system "/sbin/ifconfig eth0 up";
 
@@ -448,7 +454,8 @@ sub doRoutes {
 		print FH "interface ppp8\n";
 		print FH "  link-detect\n";
     print FH "  bandwidth 64\n\n";
-		print FH $static_routes . "\n";
+		print FH $static_routes . "\n\n";
+		print FH "ip forwarding\n\n";
 		print FH "log file /ftp/router.log\n\n";
 		close FH;
 	}
@@ -468,14 +475,20 @@ sub doRoutes {
 	my $junk_cmd = "/bin/killall zebra >> /dev/null 2>&1";
 	system $junk_cmd;
 	system "/bin/rm -f /var/run/zebra.pid >> /dev/null 2>&1";
+	system "/bin/rm -f /var/run/zserv* >> /dev/null 2>&1";
 
 	my $junk_cmd = "/bin/killall ospfd >> /dev/null 2>&1";
 	system $junk_cmd;
 	system "/bin/rm -f /var/run/ospfd.pid >> /dev/null 2>&1";
 
-	system "/usr/local/sbin/zebra -d -f /etc/routing/zebra.conf";
+	#usleep(250);
 
-	if ($ospf_count > 0){	system "/usr/local/sbin/ospfd -d -f /etc/routing/ospfd.conf";}
+	unless (-e "/var/run/zebra.pid") { 
+		system "/usr/local/sbin/zebra -d -f /etc/routing/zebra.conf"; 
+	}
+	unless (-e "/var/run/ospfd.pid") {
+		if ($ospf_count > 0){	system "/usr/local/sbin/ospfd -d -f /etc/routing/ospfd.conf";}
+	}
 
 }
 
@@ -551,9 +564,11 @@ sub doOSPFOpt {
 
 sub doPeers {
 	my $count = 0;
+	if ($debug) { print "config-read:  doPeers()\n"; }	
 	foreach my $peer ($root->children('peer')){
 			$count += 1;
 			my $peer_num = $peer->att('num');
+			if ($debug) { print "config-read: peer_num = $peer_num\n"; }
 			my $peer_name = $peer->first_child_text('name');
 			my $peer_localip = $peer->first_child_text('localip');
 			my $peer_remoteip = $peer->first_child_text('remoteip');
@@ -613,6 +628,8 @@ sub doPeers {
 	  	while( $elt= $elt->next_elt($peer, 'chan'))
 	    { 
 	    	my $p = $elt->text;
+				if ($debug) { print "config-read: chan = $p\n"; }
+
 		    if ($action eq "startup") { print $p . " ";}
 	    	open (FH, "> /etc/ppp/peers/isdn/bch".$p);
 	    	print FH "# -*- B Channel " . $p . " -*-\n\n";
@@ -628,12 +645,7 @@ sub doPeers {
 				print FH "number ". $peer_number . "\n";
 				print FH $peer_localip .":". $peer_remoteip ."\n";
 				print FH "netmask ". $peer_netmask ."\n";
-				if ($peer_auth == 0 ){
-					print FH "noauth\n";
-				}
-				else {
-					print FH "auth\n";
-				}
+				print FH "noauth\n";
 				if ($peer_auth & 1 ){}
 				else {
 					print FH "refuse-pap\n";
@@ -664,23 +676,27 @@ sub doPeers {
 				print FH "mru ". $peer_mru ."\n";
 				print FH "/dev/null\n";
 	    	close FH;
-	    	if ($peer_persistent eq "persist"){
-	    		system "/usr/sbin/pppd call isdn/bch". $p;
-	    	}
 	    }
 	    if ($action eq "startup") { print "\n\n";}
+	    if ($peer_persistent eq "persist"){
+	    	$p_needsdial = $peer_num;
+	    }
 	}
 }
 
 sub dialPeers {
 	my $p_dial = @_;
+	if ($debug) { print "config-read:  dialPeers($p_dial)\n"; }
 	foreach my $peer ($root->children('peer')){
 		if ($peer->att('num')==$p_dial){
 			my $elt= $peer;
-	  	while( $elt= $elt->next_elt($peer, 'chan'))
+	  	while( $elt = $elt->next_elt($peer, 'chan'))
 	    {
-	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $elt->text ." | awk '{print $2}'` >> /dev/null 2>&1";
-    		system "/usr/sbin/pppd call isdn/bch". $elt->text ." >> /dev/null 2>&1";
+	    	my $c = $elt->text;
+				if ($debug) { print "config-read:  chan = $c\n"; }
+
+	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $c ." | awk '{print $2}'` >> /dev/null 2>&1";
+    		system "/usr/sbin/pppd call isdn/bch". $c ." >> /dev/null 2>&1";
 	    }
 	  }
 	}
@@ -688,12 +704,15 @@ sub dialPeers {
 
 sub hangPeer {
 	my $p_dial = @_;
+	if ($debug) { print "config-read:  hangPeer($p_dial)\n"; }	
 	foreach my $peer ($root->children('peer')){
 		if ($peer->att('num')==$p_dial){
 			my $elt= $peer;
 	  	while( $elt= $elt->next_elt($peer, 'chan'))
 	    {
-	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $elt->text ." | awk '{print $2}'` >> /dev/null 2>&1";
+	    	my $c = $elt->text;
+	    	if ($debug) { print "config-read:  hanging up channel $c\n"; }
+	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $c ." | awk '{print $2}'` >> /dev/null 2>&1";
 	    }
 	  }
 	}

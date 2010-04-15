@@ -7,6 +7,7 @@ export MANPATH=/usr/local/man:/usr/man:/usr/X11R6/man
 export HOSTNAME="`cat /etc/HOSTNAME`"
 export LESSOPEN="|lesspipe.sh %s"
 export LESS="-M"
+export LC_ALL="C"
 
 # If the user doesn't have a .inputrc, use the one in /etc.
 if [ ! -r "$HOME/.inputrc" ]; then
