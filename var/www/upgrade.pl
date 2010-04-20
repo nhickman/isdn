@@ -18,20 +18,20 @@ open(UPLOADFILE, ">$upload_dir/$filename") or die "Can't open '$upload_dir/$file
 binmode UPLOADFILE;
 while ( <$upload_filehandle> )
 {
-print UPLOADFILE;
+	print UPLOADFILE;
 }
 close UPLOADFILE;
 
 print "Done. ";
-system "/bin/cp \"$upload_dir/$filename\" /tmp/upgrade.tbz";
-system "/bin/tar jxf /tmp/upgrade.tbz usr/bin/dt/scripts/runfirst.sh -C /tmp";
-if (-e /usr/bin/dt/scripts/runfirst.sh){
-	system "/bin/sh /usr/bin/dt/scripts/runfirst.sh";
-}
+system "/bin/cp $upload_dir/$filename /tmp/package.tar.bz2";
 
+
+
+print "<br><br>Services restarting<br><a href='/info.pl'>main page</a></body></html>";
 sleep 5;
 
-print "<br><br>Services restarted<br><a href='/info.pl'>main page</a></body></html>";
+system "/sbin/reboot";
+
 
 
 

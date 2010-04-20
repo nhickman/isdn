@@ -5,6 +5,9 @@ my $args = $#ARGV;
 my $debug = 0;
 if ($debug){ print "config-read: args = $args\n"; }
 
+my $version = "20090421.009";
+my $model = "BRI4";
+
 my $eth_ipaddr;
 my $eth_subnet;
 my $eth_bitmask;
@@ -41,6 +44,8 @@ if ($action eq "startup"){
 	$file_name = $file_name_start;
 	$twig->parsefile($file_name);
 	$root = $twig->root;
+	system "/bin/echo $version > /.version";
+	system "/bin/echo $model > /.model";
 
 	print "\nROUTER START CONFIGURATION\n\n";
 	doSystem();
@@ -169,7 +174,7 @@ if ($action eq "hang"){
 	$twig->parsefile($file_name);
 	$root = $twig->root;
 	
-	#Which peer to dial
+	#Which peer to hangup
 	if ($ARGV[2] eq ""){
 		exit 0;
 	}
@@ -638,36 +643,31 @@ sub doPeers {
 				print FH "logfile /ftp/ppp-bchan". $p .".log\n";
 				print FH "unit ". $p ."\n";
 				print FH "sync\n";
+				if ($peer_auth ne "0"){
+					print FH "plugin userpass.so\n";
+					print FH "user ". $peer_username ."\n";
+					print FH "password ". $peer_password ."\n";
+				}	
+				unless ($peer_auth & 1){ print FH "refuse-pap\n"; }
+				unless ($peer_auth & 2){ print FH "refuse-chap\n"; }
+				unless ($peer_auth & 4){ print FH "refuse-mschap\n"; }
 				print FH "plugin capiplugin.so\n";
-				print FH "controller 1\n";
+				if (($p eq "1") || ($p eq "2")){ print FH "controller 1\n";	}
+				if (($p eq "3") || ($p eq "4")){ print FH "controller 2\n";	}
+				if (($p eq "5") || ($p eq "6")){ print FH "controller 3\n";	}
+				if (($p eq "7") || ($p eq "8")){ print FH "controller 4\n";	}
 				print FH "multilink\n";
 				print FH "protocol hdlc\n";
 				print FH "number ". $peer_number . "\n";
 				print FH $peer_localip .":". $peer_remoteip ."\n";
 				print FH "netmask ". $peer_netmask ."\n";
 				print FH "noauth\n";
-				if ($peer_auth & 1 ){}
-				else {
-					print FH "refuse-pap\n";
-				}
-				if ($peer_auth & 2 ){}
-				else {
-					print FH "refuse-chap\n";
-				}
-				if ($peer_auth & 4 ){}
-				else {
-					print FH "refuse-mschap\n";
-				}
-				
 				if ($peer_persistent ne ""){
 					print FH $peer_persistent ."\n";
 					print FH "holdoff ". $peer_holdoff ."\n";
 					print FH "dialmax 100\n";
 				}
-				else {
-					print FH "dialmax 3\n";
-				}
-				
+				else { print FH "dialmax 3\n"; }
 				print FH "noccp\n";
 				print FH "novj\n";
 				print FH "ipcp-accept-local\n";
@@ -712,7 +712,7 @@ sub hangPeer {
 	    {
 	    	my $c = $elt->text;
 	    	if ($debug) { print "config-read:  hanging up channel $c\n"; }
-	    	system "kill -9 `ps aux | grep pppd | grep isdn/bch". $c ." | awk '{print $2}'` >> /dev/null 2>&1";
+	    	system "kill -15 `ps aux | grep pppd | grep isdn/bch". $c ." | awk '{print $2}'` >> /dev/null 2>&1";
 	    }
 	  }
 	}

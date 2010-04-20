@@ -273,6 +273,8 @@ table.eth{
 }
 table.eth .pLabel{
 	width: 100px;
+	padding: 0px 0px 5px 0;
+	margin: 0px 0px 5px 0px;
 }
 table.eth .pValue{
 }
@@ -308,8 +310,21 @@ table.peer{
 }
 table.peer .pLabel{
 	width: 100px;
-	margin-right: 5px;
+	padding: 0px 5px 0px 0px;
+	margin: 0px 5px 0px 0px;	
 }
+table.peer .pDesc{
+	width: 200px;
+	padding: 0px 5px 0px 5px;
+	margin: 0px 5px 0px 5px;	
+}
+
+table.peer .pDescSm{
+	width: 60px;
+	padding: 0px 5px 0px 5px;
+	margin: 0px 5px 0px 5px;	
+}
+
 table.peer .pValue{
 }
 
@@ -317,6 +332,7 @@ table.peer .pCheck{
 	background-color: #303030;
 	color: #FFFFFF;
 	height: 15px;
+	width: 20px;
 	border: solid;
 	border-width: 0px;
 	padding: 0px 0px 0px 0px;

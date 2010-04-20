@@ -482,32 +482,38 @@ sub getPeer {
 		$pDisplay="<div style='margin: 0px 0px 20px 0px;'>Peer configuration #" . $p . "<br></div>".
 					"<table class='peer' cellspacing='0' style='float: left'>".
 					
-					"<tr><td class='pLabel'>Peer Name:&nbsp;</td><td colspan=2 class='pValue'><input name='pName' type='text' value='".$pName."' maxlength=12 style='width: 100px;' /> <i>(12 chars max)</i></td></tr>".
+					"<tr><td class='pLabel'>Peer Name:&nbsp;</td><td colspan=2 class='pValue'><input name='pName' type='text' value='".$pName."' maxlength=12 style='width: 100px;' /><label class='pDesc'><i>(12 chars max)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Dial Number:&nbsp;</td><td colspan=2 class='pValue'><input name='pNumber' type='text' value='".$pNumber."' maxlength=50 style='width: 100px;' /> <i>(acceptable digits: 0-9, #, *)</i></td></tr>".
+					"<tr><td class='pLabel'>Dial Number:&nbsp;</td><td colspan=2 class='pValue'><input name='pNumber' type='text' value='".$pNumber."' maxlength=50 style='width: 100px;' /><label class='pDesc'><i>(acceptable digits: 0-9, #, *)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Auth Type:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPap."  type='checkbox' value='1' name='pAuthPap' id='pAuthPap' onClick='setAuthDisable()' /> <i>(PAP)</i><br><input ".$pAuthChap."  type='checkbox' value='2' name='pAuthChap' id='pAuthChap'  onClick='setAuthDisable()'/> <i>(CHAP)</i><br><input ".$pAuthMSChap."  type='checkbox' value='4' name='pAuthMSChap' id='pAuthMSChap'  onClick='setAuthDisable()'/> <i>(MSCHAP)</i></td></tr>".
-					"<tr><td class='pLabel'>Username:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthUserEn." id='pAuthUser' name='pAuthUser' type='text' value='".$pAuthUser."' maxlength=50 style='width: 100px;' /> <i>(if blank we use the routers hostname)</i></td></tr>".
-					"<tr><td class='pLabel'>Password:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPassEn." id='pAuthPass' name='pAuthPass' type='password' value='".$pAuthPass."' maxlength=50 style='width: 100px;' /> <i>(authentication password)</i></td></tr>".
+					"<tr><td class='pLabel'>Auth Type:&nbsp;</td><td colspan=2 class='pValue'>
+					        <input ".$pAuthPap."  type='checkbox' value='1' name='pAuthPap' id='pAuthPap' onClick='setAuthDisable()' class='pCheck'/><label class='pDesc'><i>(PAP)</i></label>
+							<br><input ".$pAuthChap."  type='checkbox' value='2' name='pAuthChap' id='pAuthChap'  onClick='setAuthDisable()' class='pCheck'/><label class='pDesc'><i>(CHAP)</i></label>
+							<br><input ".$pAuthMSChap."  type='checkbox' value='4' name='pAuthMSChap' id='pAuthMSChap'  onClick='setAuthDisable()' class='pCheck'/><label class='pDesc'><i>(MSCHAP)</i></label>
+					</td></tr>".
+					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
+
+					"<tr><td class='pLabel'>Username:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthUserEn." id='pAuthUser' name='pAuthUser' type='text' value='".$pAuthUser."' maxlength=50 style='width: 100px;' /><label class='pDesc'><i>(if blank we use the routers hostname)</i></label</td></tr>".
+					"<tr><td class='pLabel'>Password:&nbsp;</td><td colspan=2 class='pValue'><input ".$pAuthPassEn." id='pAuthPass' name='pAuthPass' type='password' value='".$pAuthPass."' maxlength=50 style='width: 100px;' /><label class='pDesc'><i>(authentication password)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
 					"<tr><td class='pLabel'>Local IP:&nbsp;</td><td class='pValue'><input name='pLocalIP1' type='text' value='$pLocalIP[1]' maxlength=3 style='width: 30px;' />.<input name='pLocalIP2' type='text' value='$pLocalIP[2]' maxlength=3 style='width: 30px'/>.<input name='pLocalIP3' type='text' value='$pLocalIP[3]' maxlength=3 style='width: 30px'/>.<input name='pLocalIP4' type='text' value='$pLocalIP[4]' maxlength=3 style='width: 30px'/></td></tr>".
 					"<tr><td class='pLabel'>Remote IP:&nbsp;</td><td class='pValue'><input name='pRemoteIP1' type='text' value='$pRemoteIP[1]' maxlength=3 style='width: 30px;' />.<input name='pRemoteIP2' type='text' value='$pRemoteIP[2]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP3' type='text' value='$pRemoteIP[3]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP4' type='text' value='$pRemoteIP[4]' maxlength=3 style='width: 30px'/></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Persistant:&nbsp;</td><td colspan=2><input $pPersist  type='checkbox' value='1' name='pPersist' id='pPersist' onClick='setDisable(this)' /> <i>(keeps dialer alive for retry after holdoff expiration)</i></td></tr>".
-					"<tr><td class='pLabel'>Holdoff:&nbsp;</td><td colspan=2 class='pValue'><input ".$pHoldoffEn." id='pHoldoff' name='pHoldoff' type='text' value='".$pHoldoff."' maxlength=5 width=20 /> <i>(holdoff time to redial)</i></td></tr>".
-					"<tr><td class='pLabel'>Max dial:&nbsp;</td><td colspan=2 class='pValue'><input ".$pDialMaxEn." id='pDialMax' name='pDialMax' type='text' value='".$pDialMax."' maxlength=5 width=20 /> <i>(Max attempts at dialing)</i></td></tr>".
+					"<tr><td class='pLabel'>Persistant:&nbsp;</td><td colspan=2><input $pPersist  type='checkbox' value='1' name='pPersist' id='pPersist' onClick='setDisable(this)' class='pCheck'/><label class='pDesc'><i>(keeps dialer alive for retry after holdoff expiration)</i></label></td></tr>".
+					"<tr><td class='pLabel'>Holdoff:&nbsp;</td><td colspan=2 class='pValue'><input ".$pHoldoffEn." id='pHoldoff' name='pHoldoff' type='text' value='".$pHoldoff."' maxlength=5 style='width: 50px;' /><label class='pDesc'><i>(holdoff time to redial)</i></label></td></tr>".
+					"<tr><td class='pLabel'>Max dial:&nbsp;</td><td colspan=2 class='pValue'><input ".$pDialMaxEn." id='pDialMax' name='pDialMax' type='text' value='".$pDialMax."' maxlength=5 style='width: 50px;' /><label class='pDesc'><i>(Max attempts at dialing)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>MTU:&nbsp;</td><td colspan=1 class='pValue'><input name='pMtu' type='text' value='".$pMtu."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
-					"<tr><td class='pLabel'>MRU:&nbsp;</td><td colspan=1 class='pValue'><input name='pMru' type='text' value='".$pMru."' maxlength=5 style='width: 50px;' /> <i>(default:1500 min:128 max:16384)</i></td></tr>".
+					"<tr><td class='pLabel'>MTU:&nbsp;</td><td colspan=2 class='pValue'><input name='pMtu' type='text' value='".$pMtu."' maxlength=5 style='width: 50px;' /><label class='pDesc'><i>(default:1500 min:128 max:16384)</i></label></td></tr>".
+					"<tr><td class='pLabel'>MRU:&nbsp;</td><td colspan=2 class='pValue'><input name='pMru' type='text' value='".$pMru."' maxlength=5 style='width: 50px;' /><label class='pDesc'><i>(default:1500 min:128 max:16384)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>B Channels:&nbsp;</td><td colspan=2><input $pChanUsed[1] $pChanSel[1] class='pCheck'  type='checkbox' value='1' name='pChan1' id='pChan1'/><label class='pLabel'>Port1 B1</label><input $pChanUsed[3] $pChanSel[3] class='pCheck'  type='checkbox' value='1' name='pChan3'><label class='pLabel'>Port2 B1</label><input $pChanUsed[5] $pChanSel[5] class='pCheck'  type='checkbox' value='1' name='pChan5'><label class='pLabel'>Port3 B1</label><input $pChanUsed[7] $pChanSel[7] class='pCheck'  type='checkbox' value='1' name='pChan7'><label class='pLabel'>Port4 B1</label></td></tr>".
-					"<tr><td class='pLabel'>&nbsp;</td><td colspan=2><input $pChanUsed[2] $pChanSel[2] class='pCheck'  type='checkbox' value='1' name='pChan2'><label class='pLabel'>Port1 B2</label><input $pChanUsed[4] $pChanSel[4] class='pCheck'  type='checkbox' value='1' name='pChan4'><label class='pLabel'>Port2 B2</label><input $pChanUsed[6] $pChanSel[6] class='pCheck'  type='checkbox' value='1' name='pChan6'><label class='pLabel'>Port3 B2</label><input $pChanUsed[8] $pChanSel[8] class='pCheck'  type='checkbox' value='1' name='pChan8'><label class='pLabel'>Port4 B2</label></td></tr>".
+					"<tr><td class='pLabel'>B Channels:&nbsp;</td><td colspan=2 class='pValue'><input $pChanUsed[1] $pChanSel[1] class='pCheck'  type='checkbox' value='1' name='pChan1' id='pChan1'/><label class='pDescSm'>Port1 B1</label><input $pChanUsed[3] $pChanSel[3] class='pCheck'  type='checkbox' value='1' name='pChan3'><label class='pDescSm'>Port2 B1</label><input $pChanUsed[5] $pChanSel[5] class='pCheck'  type='checkbox' value='1' name='pChan5'><label class='pDescSm'>Port3 B1</label><input $pChanUsed[7] $pChanSel[7] class='pCheck'  type='checkbox' value='1' name='pChan7'><label class='pDescSm'>Port4 B1</label></td></tr>".
+					"<tr><td class='pLabel'>&nbsp;</td><td colspan=2 class='pValue'><input $pChanUsed[2] $pChanSel[2] class='pCheck'  type='checkbox' value='1' name='pChan2'><label class='pDescSm'>Port1 B2</label><input $pChanUsed[4] $pChanSel[4] class='pCheck'  type='checkbox' value='1' name='pChan4'><label class='pDescSm'>Port2 B2</label><input $pChanUsed[6] $pChanSel[6] class='pCheck'  type='checkbox' value='1' name='pChan6'><label class='pDescSm'>Port3 B2</label><input $pChanUsed[8] $pChanSel[8] class='pCheck'  type='checkbox' value='1' name='pChan8'><label class='pDescSm'>Port4 B2</label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
 					"<tr><td>&nbsp;</td><td colspan=3><input class='pButton' type='submit' value='Commit' name='pCmd'>&nbsp;<input class='pButton' type='submit' value='Dial' name='pCmd'>&nbsp;<input class='pButton' type='submit' value='Hangup' name='pCmd'></td>".

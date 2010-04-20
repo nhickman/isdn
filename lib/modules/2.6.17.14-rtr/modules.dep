@@ -1,0 +1,29 @@
+kernel/fs/autofs/autofs.ko:
+kernel/fs/fuse/fuse.ko:
+kernel/fs/autofs4/autofs4.ko:
+kernel/lib/crc16.ko:
+kernel/drivers/net/wan/hdlc.ko:
+kernel/drivers/net/e100.ko:
+kernel/drivers/net/e1000/e1000.ko:
+kernel/drivers/net/tulip/dmfe.ko:
+kernel/drivers/net/tulip/tulip.ko:
+kernel/drivers/net/tulip/uli526x.ko:
+kernel/drivers/net/tulip/winbond-840.ko:
+kernel/drivers/net/tulip/de4x5.ko:
+kernel/drivers/hwmon/hwmon.ko:
+kernel/drivers/input/serio/serport.ko:
+kernel/drivers/char/watchdog/softdog.ko:
+kernel/drivers/char/nvram.ko:
+kernel/drivers/char/ipmi/ipmi_watchdog.ko: kernel/drivers/char/ipmi/ipmi_msghandler.ko
+kernel/drivers/char/ipmi/ipmi_si.ko: kernel/drivers/char/ipmi/ipmi_msghandler.ko
+kernel/drivers/char/ipmi/ipmi_devintf.ko: kernel/drivers/char/ipmi/ipmi_msghandler.ko
+kernel/drivers/char/ipmi/ipmi_msghandler.ko:
+kernel/drivers/char/ipmi/ipmi_poweroff.ko: kernel/drivers/char/ipmi/ipmi_msghandler.ko
+kernel/drivers/video/backlight/lcd.ko:
+kernel/drivers/connector/cn.ko:
+kernel/drivers/block/cryptoloop.ko:
+kernel/drivers/crypto/padlock.ko:
+kernel/drivers/isdn/capi/kernelcapi.ko:
+kernel/drivers/isdn/capi/capi.ko: kernel/drivers/isdn/capi/capifs.ko kernel/drivers/isdn/capi/kernelcapi.ko
+kernel/drivers/isdn/capi/capifs.ko:
+kernel/crypto/tcrypt.ko:

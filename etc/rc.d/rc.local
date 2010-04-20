@@ -7,17 +7,42 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+if [ -e /tmp/package.tar.bz2 ]; then
+	echo "Upgrade package exists"
+	cd / && tar -jxm usr/bin/dt/scripts/upgrade.sh -f /tmp/package.tar.bz2 && cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh
+	/tmp/upgrade.sh
+fi
+
+if [ -e /usr/bin/dt/MasterControl ]; then
+  echo "Old files still exist.  Removing..."
+  rm /usr/bin/dt/*
+  echo "running new upgrade script"
+  /usr/bin/dt/scripts/upgrade.sh
+fi 
+
+echo -n "Cleaning /tmp... "
+rm -rf /tmp/*
+echo "done."
+
 # LightTPD web server
 sleep 1
 echo -n "Starting Web Server... "
 /usr/bin/lighttpd/sbin/lighttpd -f /etc/lighttpd.conf
 echo "done."
+
 sleep 1
+
 echo -n "Starting ISDN Stack... "
 #/usr/bin/dt/mISDN start
 echo "done."
+
+/sbin/killall -HUP syslogd
+
 sleep 1
+
 echo -n "Starting Apps... "
 perl /usr/bin/dt/scripts/config-read.pl startup 
 echo "done."
+
+
 #cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh

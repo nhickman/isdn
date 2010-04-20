@@ -85,7 +85,7 @@ sub doEthernet {
 
 	my @args = @_;
 	my $value = $args[0];
-	my $actio = $args[1];
+	my $action = $args[1];
 	my @val = split(/,/, $value);
 	if (($value eq "") || ($action eq "")) { exit 0; }
 	my $eth_iface = $val[0];
@@ -455,13 +455,14 @@ sub doPeer {
 			}
 		}
 	}
-	#Flush the rest of the data in memory and dump to XML
-	$twig->flush(\*FH, pretty_print => 'indented');
-	close FH;
 	if ($p_matched){
 		#hangup peer before we modify it
 		if ($debug){ print "config-write: peer $val[0] matched.  Call hang-up $val[0].\n"; }
 		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl hang run peer ". $val[0];
+
+		#Flush the rest of the data in memory and dump to XML
+		$twig->flush(\*FH, pretty_print => 'indented');
+		close FH;
 
 		#copy temp file to running config
 		if ($debug){ print "config-write: Copy temp config to running conifg.\n"; }
@@ -473,6 +474,11 @@ sub doPeer {
 		#tell config-read to wring new peer configs from new config-run.xml
 		if ($debug){ print "config-write: Call config-read for writing peer $val[0].\n"; }
 		system "/usr/bin/perl /usr/bin/dt/scripts/config-read.pl write run peers";
+	}
+	else {
+  	#Flush the rest of the data in memory and dump to XML
+		$twig->flush(\*FH, pretty_print => 'indented');
+		close FH;
 	}
 }
 
