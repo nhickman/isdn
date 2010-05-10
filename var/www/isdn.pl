@@ -13,8 +13,8 @@ use vars qw(
 	$uname
 	$pDisplay @pStyle $p
 	@pLink
-	$pName $pAuth $pAuthPap $pAuthChap $pAuthMSChap $pAuthUser $pAuthPass @pLocalIP @pRemoteIP $pNumber $pPersist $pHoldoff $pDialMax $pMtu $pMru @pChan @pChanSel @pChanUsed
-	$spName $spAuth $spAuthPap $spAuthChap $spMSChap $spAuthUser $spAuthPass @spLocalIP @spRemoteIP $spNumber $spPersist $spHoldoff $spDialMax $spMtu $spMru @spChan @spChanSel @spChanUsed
+	$pName $pAuth $pAuthPap $pAuthChap $pAuthMSChap $pAuthUser $pAuthPass @pLocalIP @pRemoteIP @pNetmask $pNumber $pPersist $pHoldoff $pDialMax $pMtu $pMru @pChan @pChanSel @pChanUsed
+	$spName $spAuth $spAuthPap $spAuthChap $spMSChap $spAuthUser $spAuthPass @spLocalIP @spRemoteIP @spNetmask $spNumber $spPersist $spHoldoff $spDialMax $spMtu $spMru @spChan @spChanSel @spChanUsed
 	$debug $pDebugView $pDebugReload
 );
 my %pData;
@@ -255,6 +255,18 @@ sub getEnv {
 			if ($name eq "pRemoteIP4" && $vardata[$a] >= 0 && $vardata[$a] <=255){
 				$spRemoteIP[4] = $vardata[$a];
 			}
+			if ($name eq "pNetmask1" && $vardata[$a] >= 0 && $vardata[$a] <=255){
+				$spNetmask[1] = $vardata[$a];
+			}
+			if ($name eq "pNetmask2" && $vardata[$a] >= 0 && $vardata[$a] <=255){
+				$spNetmask[2] = $vardata[$a];
+			}
+			if ($name eq "pNetmask3" && $vardata[$a] >= 0 && $vardata[$a] <=255){
+				$spNetmask[3] = $vardata[$a];
+			}
+			if ($name eq "pNetmask4" && $vardata[$a] >= 0 && $vardata[$a] <=255){
+				$spNetmask[4] = $vardata[$a];
+			}
 			if ($name eq "pPersist"){
 				$spPersist = $vardata[$a];
 			}
@@ -351,6 +363,10 @@ sub getPeer {
 		$pRemoteIP[2] = 0;
 		$pRemoteIP[3] = 0;
 		$pRemoteIP[4] = 0;
+		$pNetmask[1] = 255;
+		$pNetmask[2] = 255;
+		$pNetmask[3] = 255;
+		$pNetmask[4] = 255;
 		$pNumber = "";
 		$pHoldoff = 30;
 		$pMtu = 1500;
@@ -408,6 +424,14 @@ sub getPeer {
 		$pRemoteIP[2] = $a2[1];
 		$pRemoteIP[3] = $a2[2];
 		$pRemoteIP[4] = $a2[3];
+
+		#Netmask IP
+		$pNetmask[0] = $p_byval[4];
+		@a2 = split(/\./, $pNetmask[0]);
+		$pNetmask[1] = $a2[0];
+		$pNetmask[2] = $a2[1];
+		$pNetmask[3] = $a2[2];
+		$pNetmask[4] = $a2[3];
 
     #Persistent options
 		$pHoldoffEn="style='background-color: #808080; width: 40px;'";
@@ -501,6 +525,7 @@ sub getPeer {
 					
 					"<tr><td class='pLabel'>Local IP:&nbsp;</td><td class='pValue'><input name='pLocalIP1' type='text' value='$pLocalIP[1]' maxlength=3 style='width: 30px;' />.<input name='pLocalIP2' type='text' value='$pLocalIP[2]' maxlength=3 style='width: 30px'/>.<input name='pLocalIP3' type='text' value='$pLocalIP[3]' maxlength=3 style='width: 30px'/>.<input name='pLocalIP4' type='text' value='$pLocalIP[4]' maxlength=3 style='width: 30px'/></td></tr>".
 					"<tr><td class='pLabel'>Remote IP:&nbsp;</td><td class='pValue'><input name='pRemoteIP1' type='text' value='$pRemoteIP[1]' maxlength=3 style='width: 30px;' />.<input name='pRemoteIP2' type='text' value='$pRemoteIP[2]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP3' type='text' value='$pRemoteIP[3]' maxlength=3 style='width: 30px'/>.<input name='pRemoteIP4' type='text' value='$pRemoteIP[4]' maxlength=3 style='width: 30px'/></td></tr>".
+					"<tr><td class='pLabel'>Netmask:&nbsp;</td><td class='pValue'><input name='pNetmask1' type='text' value='$pNetmask[1]' maxlength=3 style='width: 30px;' />.<input name='pNetmask2' type='text' value='$pNetmask[2]' maxlength=3 style='width: 30px'/>.<input name='pNetmask3' type='text' value='$pNetmask[3]' maxlength=3 style='width: 30px'/>.<input name='pNetmask4' type='text' value='$pNetmask[4]' maxlength=3 style='width: 30px'/></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
 					"<tr><td class='pLabel'>Persistant:&nbsp;</td><td colspan=2><input $pPersist  type='checkbox' value='1' name='pPersist' id='pPersist' onClick='setDisable(this)' class='pCheck'/><label class='pDesc'><i>(keeps dialer alive for retry after holdoff expiration)</i></label></td></tr>".
@@ -526,6 +551,7 @@ sub getPeer {
 sub peerCommit {
 	my $localIP = "";
 	my $remIP = "";
+	my $netmask = "";
 	if (($p != 0) && ($p ne "0")){
 		if ($spLocalIP[1] >= 0 && $spLocalIP[1] <= 255 &&
 			$spLocalIP[2] >= 0 && $spLocalIP[2] <= 255 &&
@@ -539,8 +565,14 @@ sub peerCommit {
 			$spRemoteIP[4] >= 0 && $spRemoteIP[4] <= 255) {
 			$remIP = $spRemoteIP[1] .".". $spRemoteIP[2] .".". $spRemoteIP[3] .".". $spRemoteIP[4];
 		}
+		if ($spNetmask[1] >= 0 && $spNetmask[1] <= 255 &&
+			$spNetmask[2] >= 0 && $spNetmask[2] <= 255 &&
+			$spNetmask[3] >= 0 && $spNetmask[3] <= 255 &&
+			$spNetmask[4] >= 0 && $spNetmask[4] <= 255) {
+			$netmask = $spNetmask[1] .".". $spNetmask[2] .".". $spNetmask[3] .".". $spNetmask[4];
+		}
 		my $cmd = "/usr/bin/perl /usr/bin/dt/scripts/config-write.pl write peer ";
-		$cmd = $cmd ."\"$p,$spName,$localIP,$remIP,255.255.255.0,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
+		$cmd = $cmd ."\"$p,$spName,$localIP,$remIP,$netmask,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
 		$cmd = $cmd ."$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
 		system $cmd;
 		$temp = $cmd;

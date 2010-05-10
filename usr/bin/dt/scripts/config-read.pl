@@ -5,7 +5,7 @@ my $args = $#ARGV;
 my $debug = 0;
 if ($debug){ print "config-read: args = $args\n"; }
 
-my $version = "20090421.009";
+my $version = "20100511.002";
 my $model = "BRI4";
 
 my $eth_ipaddr;
@@ -291,8 +291,8 @@ sub qryPeers {
 			my $peer_name = $peer->first_child_text('name');
 			my $peer_localip = $peer->first_child_text('localip');
 			my $peer_remoteip = $peer->first_child_text('remoteip');
-			#my $peer_netmask = $peer->first_child_text('netmask');
-			my $peer_netmask = "255.255.255.0";
+			my $peer_netmask = $peer->first_child_text('netmask');
+			#my $peer_netmask = "255.255.255.0";
 			my $peer_number = $peer->first_child_text('number');
 			my $peer_username = $peer->first_child_text('username');
 			my $peer_password = $peer->first_child_text('password');
@@ -301,7 +301,7 @@ sub qryPeers {
 			my $peer_holdoff = $peer->first_child_text('holdoff');
 			my $peer_dialmax = $peer->first_child_text('dialmax');
 			my $peer_auth = $peer->first_child_text('auth');
-			
+			if ($peer_netmask eq "" ) { $peer_netmask == "255.255.255.0"; }
 			
 	    print $peer_num . ",";
 	    print $peer_name . ",";
@@ -637,11 +637,11 @@ sub doPeers {
 
 		    if ($action eq "startup") { print $p . " ";}
 	    	open (FH, "> /etc/ppp/peers/isdn/bch".$p);
-	    	print FH "# -*- B Channel " . $p . " -*-\n\n";
+	    	print FH "# -*- B Channel " . $peer_num . " -*-\n\n";
 	    	print FH "# Name: ". $peer_name  ."\n\n";
 				print FH "debug\n";
 				print FH "logfile /ftp/ppp-bchan". $p .".log\n";
-				print FH "unit ". $p ."\n";
+				print FH "unit ". $peer_num ."\n";
 				print FH "sync\n";
 				if ($peer_auth ne "0"){
 					print FH "plugin userpass.so\n";

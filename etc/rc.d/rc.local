@@ -15,7 +15,8 @@ fi
 
 if [ -e /usr/bin/dt/MasterControl ]; then
   echo "Old files still exist.  Removing..."
-  rm /usr/bin/dt/*
+  rm /usr/bin/dt/msgsend
+  rm /usr/bin/dt/MasterControl
   echo "running new upgrade script"
   /usr/bin/dt/scripts/upgrade.sh
 fi 
@@ -33,16 +34,14 @@ echo "done."
 sleep 1
 
 echo -n "Starting ISDN Stack... "
-#/usr/bin/dt/mISDN start
+/usr/bin/dt/mISDN start
 echo "done."
 
-/sbin/killall -HUP syslogd
+/bin/killall -HUP syslogd
 
 sleep 1
 
 echo -n "Starting Apps... "
 perl /usr/bin/dt/scripts/config-read.pl startup 
+
 echo "done."
-
-
-#cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh
