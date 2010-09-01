@@ -5,7 +5,7 @@ my $args = $#ARGV;
 my $debug = 0;
 if ($debug){ print "config-read: args = $args\n"; }
 
-my $version = "20100511.002";
+my $version = "20100901.003";
 my $model = "BRI4";
 
 my $eth_ipaddr;
@@ -461,7 +461,8 @@ sub doRoutes {
     print FH "  bandwidth 64\n\n";
 		print FH $static_routes . "\n\n";
 		print FH "ip forwarding\n\n";
-		print FH "log file /ftp/router.log\n\n";
+		print FH "log file /ftp/router.log\n";
+		print FH "log syslog\n\n";
 		close FH;
 	}
 	if (1){
@@ -474,7 +475,8 @@ sub doRoutes {
 		open(FH, ">> ". $debug_filename . "/etc/routing/ospfd.conf");
 		print FH "router ospf\n";
 		print FH $ospf_routes . "\n";
-		print FH "log file /ftp/router.log\n\n";
+		print FH "log file /ftp/router.log\n";
+		print FH "log syslog\n\n";
 		close FH;
 	}
 	my $junk_cmd = "/bin/killall zebra >> /dev/null 2>&1";
@@ -579,6 +581,8 @@ sub doPeers {
 			my $peer_remoteip = $peer->first_child_text('remoteip');
 			my $peer_netmask = $peer->first_child_text('netmask');
 			my $peer_number = $peer->first_child_text('number');
+			my $peer_number_parse = $peer_number;
+			$peer_number_parse =~ s/\+/,/;
 			my $peer_username = $peer->first_child_text('username');
 			my $peer_password = $peer->first_child_text('password');
 			my $peer_mtu = $peer->first_child_text('mtu');
@@ -658,7 +662,7 @@ sub doPeers {
 				if (($p eq "7") || ($p eq "8")){ print FH "controller 4\n";	}
 				print FH "multilink\n";
 				print FH "protocol hdlc\n";
-				print FH "number ". $peer_number . "\n";
+				print FH "number ". $peer_number_parse . "\n";
 				print FH $peer_localip .":". $peer_remoteip ."\n";
 				print FH "netmask ". $peer_netmask ."\n";
 				print FH "noauth\n";

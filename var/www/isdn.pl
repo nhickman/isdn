@@ -509,7 +509,7 @@ sub getPeer {
 					"<tr><td class='pLabel'>Peer Name:&nbsp;</td><td colspan=2 class='pValue'><input name='pName' type='text' value='".$pName."' maxlength=12 style='width: 100px;' /><label class='pDesc'><i>(12 chars max)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
-					"<tr><td class='pLabel'>Dial Number:&nbsp;</td><td colspan=2 class='pValue'><input name='pNumber' type='text' value='".$pNumber."' maxlength=50 style='width: 100px;' /><label class='pDesc'><i>(acceptable digits: 0-9, #, *)</i></label></td></tr>".
+					"<tr><td class='pLabel'>Dial Number:&nbsp;</td><td colspan=2 class='pValue'><input name='pNumber' type='text' value='".$pNumber."' maxlength=50 style='width: 100px;' /><label class='pDesc'><i>(acceptable digits: 0-9, #, * <br> additional numbers can be seperated by +.  eg. 1111+2222)</i></label></td></tr>".
 					"<tr><td colspan=3 style='height: 5px;'>&nbsp;</td></tr>".
 					
 					"<tr><td class='pLabel'>Auth Type:&nbsp;</td><td colspan=2 class='pValue'>
@@ -575,7 +575,7 @@ sub peerCommit {
 		$cmd = $cmd ."\"$p,$spName,$localIP,$remIP,$netmask,$spNumber,$spAuth,$spAuthUser,$spAuthPass,";
 		$cmd = $cmd ."$spMtu,$spMru,$spPersist,$spHoldoff,$spDialMax,$spChan[1],$spChan[2],$spChan[3],$spChan[4],$spChan[5],$spChan[6],$spChan[7],$spChan[8]\" mod";
 		system $cmd;
-		$temp = $cmd;
+		#$temp = $cmd;
 	}
 }
 

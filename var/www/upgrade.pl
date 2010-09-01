@@ -30,7 +30,7 @@ system "/bin/cp $upload_dir/$filename /tmp/package.tar.bz2";
 print "<br><br>Services restarting<br><a href='/info.pl'>main page</a></body></html>";
 sleep 5;
 
-system "/sbin/reboot";
+system "/usr/bin/perl /usr/bin/dt/scripts/reboot.pl";
 
 
 

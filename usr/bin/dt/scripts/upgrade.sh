@@ -1,5 +1,6 @@
 #! /bin/sh
-
+REBOOT=0
+VERSION="20100901.001"
 echo "Upgrade executed"
 
 #make dir
@@ -7,6 +8,7 @@ echo ""
 echo "-cleaning and creating tmp dirs"
 /usr/bin/rm -rf /tmp/upgrade
 /usr/bin/mkdir /tmp/upgrade
+
 
 #change to dir
 cd /tmp/upgrade
@@ -17,47 +19,52 @@ if [ -e /tmp/package.tar.bz2 ]; then
 	echo -n "-extracting files..."
 	/usr/bin/tar jxfm /tmp/package.tar.bz2
 	echo "done."
+	echo "-owning files."
+	chown -R root:root /tmp/upgrade/*
 fi
 
 #kernel modules exist
 if [ -e /tmp/upgrade/lib/modules ]; then
-	echo ""
 	echo -n "-remove old modules... "
 	/usr/bin/rm -rf /lib/modules/* 
 	echo "done."
-	echo ""
-	echo -n "Install new kernel modules... "
-  /usr/bin/cp -a /tmp/upgrade/lib/* /lib
-  /sbin/depmod
-  echo "done."
-  /usr/bin/rm -rf lib
+	echo -n "-install new kernel modules... "
+	/usr/bin/cp -a /tmp/upgrade/lib/* /lib
+	/sbin/depmod
+	echo "done."
+	/usr/bin/rm -rf lib
+	REBOOT=1
 fi
 
 #kernel exist
 if [ -e /tmp/upgrade/boot/vmlinuz ]; then
-	echo ""
 	echo -n "-install new kernel... "
 	/usr/bin/rm -rf /boot/*
-  /usr/bin/cp -a /tmp/upgrade/boot/* /boot
+	/usr/bin/cp -a /tmp/upgrade/boot/* /boot
 	/sbin/lilo
 	/usr/bin/rm -rf boot/*
 	echo "done."
+	REBOOT=1
 fi
 
 #copy other files
-if [ -e .version ]; then
-	echo ""
-	echo -n "-copying files... "
-	/usr/bin/cp -a * /
-	/usr/bin/cp /tmp/upgrade/.version /.version
-	/usr/bin/cp /tmp/upgrade/.model /.model
-	echo "done."
-fi
+cd /tmp/upgrade
+echo "-remove old scripts and modules."
+/usr/bin/rm -rf /usr/bin/dt/*
+/usr/bin/rm -rf /var/www/*
+echo "-copying files... "
+/usr/bin/cp -a /tmp/upgrade/* /
+echo "-done."
 
 
-echo ""
-echo "Upgrade complete.  Reboot."
 rm -rf /tmp/package.tar.bz2
-/sbin/reboot
+if [ $REBOOT -eq 1 ]; 
+then
+	echo "Upgrade complete.  Rebooting."
+	/sbin/reboot
+else
+	echo "Upgrade complete.  Reboot not needed."
+	echo ""
+fi
 
 #done

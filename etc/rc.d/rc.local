@@ -9,7 +9,7 @@
 
 if [ -e /tmp/package.tar.bz2 ]; then
 	echo "Upgrade package exists"
-	cd / && tar -jxm usr/bin/dt/scripts/upgrade.sh -f /tmp/package.tar.bz2 && cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh
+	cd / && tar jxm usr/bin/dt/scripts/upgrade.sh -f /tmp/package.tar.bz2 && cp -a /usr/bin/dt/scripts/upgrade.sh /tmp/upgrade.sh
 	/tmp/upgrade.sh
 fi
 
