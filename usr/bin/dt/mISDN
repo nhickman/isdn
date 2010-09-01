@@ -1,0 +1,64 @@
+#!/bin/bash
+
+
+mISDN_start() {
+  echo "-- Loading mISDN modules --"
+  echo ".Loading CAPI"
+  /sbin/modprobe --ignore-install capi
+  sleep .5
+  echo ".Loading CORE"
+  /sbin/insmod /usr/bin/dt/modules/mISDN_core.ko debug=0
+  sleep .5
+  echo ".Loading Layer 1"
+  /sbin/insmod /usr/bin/dt/modules/mISDN_l1.ko debug=0
+  sleep .5
+  echo ".Loading Layer 2"
+  /sbin/insmod /usr/bin/dt/modules/mISDN_l2.ko debug=0
+  sleep .5
+  echo ".Loading DSS1"
+  /sbin/insmod /usr/bin/dt/modules/l3udss1.ko debug=0
+  sleep .5
+  echo ".Loading ISDN CAPI"
+  /sbin/insmod /usr/bin/dt/modules/mISDN_capi.ko debug=0
+  sleep .5
+  echo ".Loading HFCMULTI"
+  /sbin/insmod /usr/bin/dt/modules/hfcmulti.ko type=0x4 protocol=0x2,0x2,0x2,0x2 layermask=0x0,0x0,0x0,0x0 poll=64 debug=0 timer=0
+  sleep .5
+  echo ".Loading MISDN Debug"
+  /sbin/insmod /usr/bin/dt/modules/mISDN_debugtool.ko
+
+}
+
+
+mISDN_stop() {
+  echo "-- Unloading mISDN modules --"
+  rmmod -f mISDN_debugtool
+  rmmod -f hfcmulti 
+  rmmod -f l3udss1
+  rmmod -f mISDN_l2
+  rmmod -f mISDN_l1
+  rmmod -f mISDN_capi
+  rmmod -f mISDN_core
+}
+
+mISDN_restart() {
+  mISDN_stop
+  sleep 1
+  mISDN_start
+}
+
+
+case "$1" in
+'start')
+  mISDN_stop
+  mISDN_start
+  ;;
+'stop')
+  mISDN_stop
+  ;;
+'restart')
+  mISDN_restart
+  ;;
+*)
+  echo "usage $0 start|stop|restart"
+esac

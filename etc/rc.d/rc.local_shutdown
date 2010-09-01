@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "Shutting down ISDN stack... "
+/usr/bin/dt/mISDN stop
+echo "Shutting down WebUI... "
+/bin/killall lighttpd
+echo "done."
+echo -n "Cleaning up logs..."
+rm -rf /var/log/*
+rm -f /ftp/*.log
+rm -f /ftp/debug
+rm -f /ftp/cmdline
+echo "done."
