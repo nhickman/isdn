@@ -1,0 +1,53 @@
+  <system>
+    <hostname>ISDNRTR</hostname>
+  </system>
+  <ethernet iface="0">
+    <enabled/>
+    <ipaddress>192.168.50.1</ipaddress>
+    <subnet>255.255.255.0</subnet>
+    <mtu>1500</mtu>
+  </ethernet>
+  <peer num="1">
+    <name>test</name>
+    <localip>192.168.5.2</localip>
+    <remoteip>192.168.5.1</remoteip>
+    <netmask>255.255.255.0</netmask>
+    <number>1111+2222</number>
+    <auth>2</auth>
+    <username>dtrtr</username>
+    <password>cisco</password>
+    <mtu>1500</mtu>
+    <mru>1500</mru>
+    <persist>0</persist>
+    <holdoff>1</holdoff>
+    <dialmax>1</dialmax>
+    <chan>1</chan>
+    <chan>2</chan>
+    <chan>3</chan>
+    <chan>4</chan>
+  </peer>
+  <route type="ospf">
+    <network>192.168.5.0</network>
+    <subnet>255.255.255.0</subnet>
+    <area>0</area>
+  </route>
+  <route type="ospf">
+    <network>192.168.50.0</network>
+    <subnet>255.255.255.0</subnet>
+    <area>0</area>
+  </route>
+  <ospf_opt peer="1">
+    <ospf_network>1</ospf_network>
+    <ospf_auth></ospf_auth>
+    <ospf_auth_key></ospf_auth_key>
+    <ospf_message_digest_key_id></ospf_message_digest_key_id>
+    <ospf_message_digest_key_pass></ospf_message_digest_key_pass>
+    <ospf_cost></ospf_cost>
+    <ospf_dead_interval>120</ospf_dead_interval>
+    <ospf_hello_interval>30</ospf_hello_interval>
+    <ospf_retransmit_interval>5</ospf_retransmit_interval>
+    <ospf_trasmit_delay>120</ospf_trasmit_delay>
+    <ospf_mtu_ignore>0</ospf_mtu_ignore>
+    <opt_priority></opt_priority>
+  </ospf_opt>
+</mastercontrol>
